@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Daiku - အွန်လိုင်းဆိုင် (Demo)</title>
+<style>
+  :root{--blue:#0b75c9;--green:#28a745;--orange:#ff9800}
+  body{font-family:"Noto Sans Myanmar","Segoe UI",Roboto,sans-serif;margin:0;background:#f5f7fb;color:#111}
+  header{background:var(--blue);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+  .brand{font-weight:700}
+  .nav button{background:transparent;border:0;color:#fff;cursor:pointer;font-size:14px;margin-left:10px}
+  main{display:flex;gap:16px;padding:18px}
+  .sidebar{width:260px}
+  .products{flex:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+  .product{background:#fff;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px;box-shadow:0 1px 4px rgba(12,20,40,0.06)}
+  .product img{height:140px;object-fit:cover;border-radius:6px;background:#eee}
+  .price{font-weight:700}
+  .btn{padding:8px 10px;border-radius:8px;border:0;cursor:pointer}
+  .btn-primary{background:var(--blue);color:#fff}
+  .btn-buy{background:var(--green);color:#fff}
+  .btn-pay{background:var(--orange);color:#fff}
+  .card{background:#fff;border-radius:8px;padding:12px;box-shadow:0 1px 4px rgba(12,20,40,0.06);margin-bottom:12px}
+  input[type="text"],input[type="number"],textarea{width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box}
+  .preview-img{width:100%;height:120px;object-fit:cover;border-radius:6px;display:none;margin-top:8px}
+  #productsEmpty{color:#666;padding:12px}
+  .small{font-size:13px;color:#444}
+  #chatMessages,#adminChatMessages{height:160px;overflow:auto;background:#fafafa;padding:8px;border-radius:6px;border:1px solid #eee}
+  .order-item{margin-bottom:8px}
+  .muted{color:#666}
+  .right-col{width:360px;max-width:100%}
+  .u-input{width:100%;padding:8px;border-radius:6px;border:1px solid #ddd;margin-bottom:6px;box-sizing:border-box}
+  .order-block{padding:8px;border-radius:6px;border:1px solid #eee;background:#fff;margin-bottom:8px}
+  hr{margin:12px 0;border:none;border-top:1px solid #eee}
+</style>
+</head>
+
+<body>
+<header>
+  <div class="brand">🔷 Daiku - အွန်လိုင်းဆိုင် (Demo)</div>
+  <div class="nav">
+    <button id="messagesBtn">မက်ဆေ့ချ်</button>
+    <button id="adminToggleBtn">Admin ဝင်မည်</button>
+    <button id="cartBtn">ကတ် (<span id="cartCount">0</span>)</button>
+  </div>
+</header>
+
+<main>
+  <!-- LEFT SIDEBAR -->
+  <aside class="sidebar">
+    <div class="card">
+      <div class="small">ရှာရန်</div>
+      <input id="searchInput" placeholder="ပစ္စည်းအမည်၊ အမျိုးအစား" />
+    </div>
+
+    <div class="card">
+      <div style="font-weight:700">စျေးဝယ်ကတ်</div>
+      <div class="small">စုစုပေါင်း: <span id="cartTotalPrice">0 Ks</span></div>
+      <div id="cartItemsList" style="margin-top:8px"></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button id="checkoutBtn" class="btn btn-primary">Checkout</button>
+        <button id="clearCartBtn" class="btn">Clear</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:700">Order History (User)</div>
+      <div id="orderList" class="small">မှတ်တမ်းမရှိသေးပါ</div>
+    </div>
+
+    <!-- Payment Box -->
+    <div class="card">
+      <div style="font-weight:700">💰 Payment Methods</div>
+      <div style="margin-top:10px">
+        <div><b>KPay</b></div>
+        <div id="kpayNumber">09 940790449</div>
+        <button class="btn btn-primary" onclick="copyNumber('kpayNumber')">Copy</button>
+      </div>
+      <hr>
+      <div>
+        <div><b>WavePay</b></div>
+        <div id="waveNumber">09 954204473</div>
+        <button class="btn btn-primary" onclick="copyNumber('waveNumber')">Copy</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- PRODUCTS -->
+  <section class="products" id="products"></section>
+
+  <!-- RIGHT COLUMN (Admin + Forms + Chat) -->
+  <aside class="right-col">
+    <!-- Admin Panel -->
+    <div class="card admin" id="adminPanel" style="display:none">
+      <div style="font-weight:700">Admin - ပစ္စည်း ထည့်မည်</div>
+      <form id="adminForm" class="admin-form" style="margin-top:8px">
+        <input id="pName" type="text" placeholder="ပစ္စည်းအမည်" required />
+        <input id="pPrice" type="number" placeholder="ဈေးနှုန်း (Ks)" required style="margin-top:8px"/>
+        <input id="pCategory" type="text" placeholder="အမျိုးအစား" style="margin-top:8px"/>
+        <input id="pImage" type="file" accept="image/*" style="margin-top:8px"/>
+        <img id="pPreview" class="preview-img" />
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button type="submit" class="btn btn-primary">ထည့်မည်</button>
+          <button type="button" id="adminLogout" class="btn">Admin ထွက်မည်</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Admin Orders -->
+    <div class="card admin" id="adminOrders" style="display:none;margin-top:12px">
+      <div style="font-weight:700">Admin - Customer Orders</div>
+      <div id="adminOrderList" style="margin-top:8px"></div>
+    </div>
+
+    <!-- Admin Chat -->
+    <div class="card admin" id="adminChat" style="display:none;margin-top:12px">
+      <div style="font-weight:700">Admin Chat</div>
+      <div id="adminChatMessages" style="margin-top:8px"></div>
+      <input id="adminChatInput" placeholder="Admin မှာ စကားရိုက်ပါ..." class="u-input" />
+      <div style="display:flex;gap:8px">
+        <button id="adminSendBtn" class="btn btn-primary">ပို့မည်</button>
+        <button id="adminClearMessages" class="btn">Clear</button>
+      </div>
+    </div>
+
+    <!-- Checkout Form -->
+    <div class="card" id="checkoutForm" style="display:none;margin-top:12px">
+      <div style="font-weight:700">ဝယ်ယူသူ အချက်အလက်</div>
+      <input id="uName" placeholder="နာမည်" class="u-input" />
+      <input id="uPhone" placeholder="ဖုန်းနံပါတ်" class="u-input" />
+      <input id="uAddress" placeholder="နေရပ်လိပ်စာ" class="u-input" />
+      <input id="uAccount" placeholder="အကောင့် (User Account)" class="u-input" />
+      <div style="display:flex;gap:8px;">
+        <button id="confirmOrderBtn" class="btn btn-primary">အော်ဒါအတည်ပြုမည်</button>
+        <button id="cancelCheckout" class="btn">မလုပ်တော့</button>
+      </div>
+    </div>
+
+    <!-- User Chat -->
+    <div class="card" id="chatBox" style="margin-top:12px">
+      <div style="font-weight:700">📩 စကားဝှက် (Admin ←→ User)</div>
+      <div id="chatMessages" style="margin-top:8px"></div>
+      <input id="chatInput" placeholder="စာရိုက်ပါ..." class="u-input" />
+      <div style="display:flex;gap:8px">
+        <button id="sendMsgBtn" class="btn btn-primary">မက်ဆေ့ချ် ပို့မည်</button>
+        <button id="clearChatBtn" class="btn">Clear</button>
+      </div>
+      <div class="muted" style="margin-top:6px;font-size:12px">
+        အော်ဒါနှင့် ပတ်သက်သော စကားများရှိပါက ရိုက်ထည့်ပါ — အော်ဒါ ID ကို auto attach လုပ်ပေးပါလိမ့်မယ်။
+      </div>
+    </div>
+  </aside>
+</main>
+
+<script>
+/* ---------- Constants & State ---------- */
+const ADMIN_PASSWORD = '1234';
+
+let products = JSON.parse(localStorage.getItem('demo_products') || '[]');
+let cart = JSON.parse(localStorage.getItem('demo_cart') || '[]');
+let orders = JSON.parse(localStorage.getItem('demo_orders') || '[]');
+let messages = JSON.parse(localStorage.getItem('demo_messages') || '[]');
+let lastUserOrderID = localStorage.getItem('demo_last_order') || null;
+
+/* ---------- DOM Elements ---------- */
+const productsEl = document.getElementById('products');
+const cartCount = document.getElementById('cartCount');
+const cartTotalPrice = document.getElementById('cartTotalPrice');
+const cartItemsList = document.getElementById('cartItemsList');
+const adminPanel = document.getElementById('adminPanel');
+const adminToggleBtn = document.getElementById('adminToggleBtn');
+const adminForm = document.getElementById('adminForm');
+const pPreview = document.getElementById('pPreview');
+const pImage = document.getElementById('pImage');
+const searchInput = document.getElementById('searchInput');
+const orderList = document.getElementById('orderList');
+const checkoutBtn = document.getElementById('checkoutBtn');
+const checkoutForm = document.getElementById('checkoutForm');
+const confirmOrderBtn = document.getElementById('confirmOrderBtn');
+const cancelCheckout = document.getElementById('cancelCheckout');
+const adminOrdersPanel = document.getElementById('adminOrders');
+const adminOrderList = document.getElementById('adminOrderList');
+const adminChat = document.getElementById('adminChat');
+const adminChatMessages = document.getElementById('adminChatMessages');
+const adminChatInput = document.getElementById('adminChatInput');
+const adminSendBtn = document.getElementById('adminSendBtn');
+const messagesBtn = document.getElementById('messagesBtn');
+const chatBox = document.getElementById('chatBox');
+const chatMessages = document.getElementById('chatMessages');
+const chatInput = document.getElementById('chatInput');
+const sendMsgBtn = document.getElementById('sendMsgBtn');
+const adminLogout = document.getElementById('adminLogout');
+const cartBtn = document.getElementById('cartBtn');
+const clearCartBtn = document.getElementById('clearCartBtn');
+const clearChatBtn = document.getElementById('clearChatBtn');
+const adminClearMessages = document.getElementById('adminClearMessages');
+
+/* ---------- Save Functions ---------- */
+function saveProducts(){ localStorage.setItem('demo_products', JSON.stringify(products)); }
+function saveCart(){ localStorage.setItem('demo_cart', JSON.stringify(cart)); renderCartSummary(); }
+function saveOrders(){ localStorage.setItem('demo_orders', JSON.stringify(orders)); renderOrders(); renderAdminOrders(); }
+function saveMessages(){ localStorage.setItem('demo_messages', JSON.stringify(messages)); renderChat(); renderAdminChat(); }
+
+/* ---------- Utilities ---------- */
+function formatPrice(n){ return Number(n).toLocaleString() + ' Ks'; }
+function nowString(){ return new Date().toLocaleString(); }
+function copyNumber(id){
+  const text = document.getElementById(id).innerText;
+  navigator.clipboard.writeText(text).then(() => alert("Copied: " + text));
+}
+
+/* ---------- Render Functions ---------- */
+function renderProducts(){
+  const q = (searchInput.value || '').toLowerCase();
+  productsEl.innerHTML = '';
+  
+  if(products.length === 0){ 
+    productsEl.innerHTML = "<div id='productsEmpty'>ပစ္စည်း မရှိသေးပါ — Admin အနေနဲ့ထည့်ပါ</div>"; 
+    return; 
+  }
+  
+  products.filter(p => !q || p.name.toLowerCase().includes(q) || (p.category||'').toLowerCase().includes(q))
+    .forEach((p, idx) => {
+      const el = document.createElement('div'); 
+      el.className = 'product card';
+      el.innerHTML = `
+        <img src="${p.image||''}" alt="${p.name}">
+        <div style="font-weight:700">${p.name}</div>
+        <div class="price">${formatPrice(p.price)}</div>
+        <div class="muted">${p.category || ''}</div>
+        <div style="display:flex;gap:6px;margin-top:6px">
+          <button class="btn btn-primary" data-add="${idx}">ကတ်ထည့်မည်</button>
+          <button class="btn btn-buy" data-buy="${idx}">ယခုပေးရန်</button>
+          <button class="btn btn-pay" data-kpay="${idx}">KPay</button>
+          <button class="btn btn-pay" data-wavepay="${idx}">WavePay</button>
+        </div>
+      `;
+      productsEl.appendChild(el);
+  });
+}
+
+function renderCartSummary(){
+  cartCount.innerText = cart.reduce((s,i) => s + i.qty, 0);
+  const total = cart.reduce((s,i) => s + i.price * i.qty, 0);
+  cartTotalPrice.innerText = formatPrice(total);
+  
+  cartItemsList.innerHTML = '';
+  if(cart.length === 0){ 
+    cartItemsList.innerHTML = '<div class="muted">Cart အလွှတ်</div>'; 
+    return; 
+  }
+  
+  cart.forEach((c, i) => {
+    const div = document.createElement('div');
+    div.className = 'order-block';
+    div.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><b>${c.name}</b><div class="muted">${formatPrice(c.price)}</div></div>
+        <div>
+          <button class="btn" data-dec="${i}">-</button>
+          <span style="margin:0 6px">${c.qty}</span>
+          <button class="btn" data-inc="${i}">+</button>
+        </div>
+      </div>
+    `;
+    cartItemsList.appendChild(div);
+  });
+}
+
+function renderOrders(){
+  if(orders.length === 0){ 
+    orderList.innerText = 'မှတ်တမ်းမရှိသေးပါ'; 
+    return; 
+  }
+  
+  orderList.innerHTML = '';
+  orders.slice().reverse().forEach(o => {
+    const div = document.createElement('div');
+    div.className = 'order-block';
+    div.innerHTML = `
+      <div><b>Order ID:</b> ${o.orderID}</div>
+      <div><b>Time:</b> ${o.time}</div>
+      <div><b>Customer:</b> ${o.user.name} (${o.user.phone})</div>
+      <div class="muted">Items: ${o.items.map(it => `${it.name} x${it.qty}`).join(', ')}</div>
+    `;
+    orderList.appendChild(div);
+  });
+}
+
+function renderAdminOrders(){
+  adminOrderList.innerHTML = '';
+  if(orders.length === 0){ 
+    adminOrderList.innerText = 'Order မရှိသေးပါ'; 
+    return; 
+  }
+  
+  orders.slice().reverse().forEach(o => {
+    const div = document.createElement('div');
+    div.className = 'order-block';
+    div.innerHTML = `
+      <div><b>Order ID:</b> ${o.orderID}</div>
+      <div><b>Time:</b> ${o.time}</div>
+      <div><b>Customer:</b> ${o.user.name} (${o.user.phone})</div>
+      <div><b>Address:</b> ${o.user.addr}</div>
+      <div><b>Account:</b> ${o.user.acc || '-'}</div>
+      <div style="margin-top:6px"><b>Items:</b></div>
+      <div class="muted">${o.items.map(it => `- ${it.name} x${it.qty} (${formatPrice(it.price)})`).join('<br>')}</div>
+      <div style="margin-top:8px;display:flex;gap:6px">
+        <button class="btn btn-primary" data-chat="${o.orderID}">Chat</button>
+        <button class="btn" data-mark="${o.orderID}">Mark as Processed</button>
+      </div>
+    `;
+    adminOrderList.appendChild(div);
+  });
+}
+
+function renderChat(){
+  chatMessages.innerHTML = messages.map(m => {
+    const idInfo = m.orderID ? ` <span class="muted">[Order:${m.orderID}]</span>` : '';
+    return `<div><b>${m.sender}</b>${idInfo}: ${m.text} <div class="muted" style="font-size:12px">${m.time}</div></div>`;
+  }).join('<hr>');
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function renderAdminChat(){
+  adminChatMessages.innerHTML = messages.map(m => {
+    const idInfo = m.orderID ? ` <span class="muted">[Order:${m.orderID}]</span>` : '';
+    return `<div><b>${m.sender}</b>${idInfo}: ${m.text} <div class="muted" style="font-size:12px">${m.time}</div></div>`;
+  }).join('<hr>');
+  adminChatMessages.scrollTop = adminChatMessages.scrollHeight;
+}
+
+/* ---------- Event Listeners ---------- */
+productsEl.addEventListener('click', (e) => {
+  if(e.target.dataset.add !== undefined){
+    const idx = Number(e.target.dataset.add);
+    const p = products[idx];
+    const cartItem = cart.find(c => c.name === p.name);
+    if(cartItem) cartItem.qty++;
+    else cart.push({...p, qty:1});
+    saveCart();
+    alert(`${p.name} ကို ကတ်ထည့်ပြီးပါပြီ`);
+  }
+  
+  if(e.target.dataset.buy !== undefined){
+    const idx = Number(e.target.dataset.buy);
+    const p = products[idx];
+    cart = [{...p, qty:1}];
+    saveCart();
+    checkoutForm.style.display = 'block';
+  }
+  
+  if(e.target.dataset.kpay !== undefined || e.target.dataset.wavepay !== undefined){
+    const idx = Number(e.target.dataset.kpay || e.target.dataset.wavepay);
+    const p = products[idx];
+    const method = e.target.dataset.kpay ? 'KPay' : 'WavePay';
+    alert(`${method} ဖြင့် ${p.name} ကို စီစဉ်ထားပါ (Demo)`);
+  }
+});
+
+cartItemsList.addEventListener('click', (e) => {
+  if(e.target.dataset.inc !== undefined){
+    const i = Number(e.target.dataset.inc); 
+    cart[i].qty++; 
+    saveCart();
+  }
+  
+  if(e.target.dataset.dec !== undefined){
+    const i = Number(e.target.dataset.dec);
+    cart[i].qty--; 
+    if(cart[i].qty <= 0) cart.splice(i,1);
+    saveCart();
+  }
+});
+
+clearCartBtn.addEventListener('click', () => {
+  if(!confirm('Cart ကိုဖျက်မှာ တကယ်လား?')) return;
+  cart = []; 
+  saveCart();
+});
+
+checkoutBtn.addEventListener('click', () => {
+  if(cart.length === 0){ 
+    alert('Cart အလွတ်ပါ'); 
+    return; 
+  }
+  checkoutForm.style.display = 'block';
+});
+
+cancelCheckout.addEventListener('click', () => {
+  checkoutForm.style.display = 'none';
+});
+
+confirmOrderBtn.addEventListener('click', () => {
+  const name = document.getElementById('uName').value.trim();
+  const phone = document.getElementById('uPhone').value.trim();
+  const addr = document.getElementById('uAddress').value.trim();
+  const acc = document.getElementById('uAccount').value.trim();
+  
+  if(!name || !phone || !addr){ 
+    alert('နာမည် / ဖုန်း / လိပ်စာ ပြည့်စုံစွာ ဖြည့်ပါ'); 
+    return; 
+  }
+  
+  const orderID = 'OD' + Date.now();
+  const orderTime = nowString();
+  
+  const order = {
+    orderID,
+    time: orderTime,
+    user: { name, phone, addr, acc },
+    items: JSON.parse(JSON.stringify(cart))
+  };
+  
+  orders.push(order);
+  saveOrders();
+  
+  lastUserOrderID = orderID;
+  localStorage.setItem('demo_last_order', lastUserOrderID);
+  
+  cart = []; 
+  saveCart();
+  
+  checkoutForm.style.display = 'none';
+  document.getElementById('uName').value = '';
+  document.getElementById('uPhone').value = '';
+  document.getElementById('uAddress').value = '';
+  document.getElementById('uAccount').value = '';
+  
+  alert(`Order တင်ပြီးပါပြီ (Order ID: ${orderID})\nAdmin မှ ဆက်သွယ်သွားပါသည်။`);
+});
+
+adminToggleBtn.addEventListener('click', () => {
+  const pass = prompt('Admin Password ရိုက်ထည့်ပါ');
+  if(pass === ADMIN_PASSWORD){
+    adminPanel.style.display = 'block';
+    adminOrdersPanel.style.display = 'block';
+    adminChat.style.display = 'block';
+    adminToggleBtn.innerText = 'Admin: Logged In';
+    renderAdminOrders();
+    renderAdminChat();
+  } else {
+    alert('Password မမှန်ပါ');
+  }
+});
+
+adminLogout.addEventListener('click', () => {
+  adminPanel.style.display = 'none';
+  adminOrdersPanel.style.display = 'none';
+  adminChat.style.display = 'none';
+  adminToggleBtn.innerText = 'Admin ဝင်မည်';
+});
+
+pImage.addEventListener('change', () => {
+  const f = pImage.files[0]; 
+  if(!f) return;
+  const reader = new FileReader();
+  reader.onload = e => { 
+    pPreview.src = e.target.result; 
+    pPreview.style.display = 'block'; 
+  };
+  reader.readAsDataURL(f);
+});
+
+adminForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const newP = {
+    name: document.getElementById('pName').value || 'Unnamed',
+    price: Number(document.getElementById('pPrice').value) || 0,
+    category: document.getElementById('pCategory').value || '',
+    image: pPreview.src || ''
+  };
+  
+  products.unshift(newP);
+  saveProducts();
+  renderProducts();
+  adminForm.reset();
+  pPreview.style.display = 'none';
+  alert('ပစ္စည်းထည့်ပြီးပါပြီ');
+});
+
+adminOrderList.addEventListener('click', (e) => {
+  if(e.target.dataset.chat){
+    const oid = e.target.dataset.chat;
+    adminChat.style.display = 'block';
+    adminChatInput.placeholder = `Reply about Order ${oid} ...`;
+    adminChatInput.dataset.order = oid;
+    adminChatInput.focus();
+  }
+  
+  if(e.target.dataset.mark){
+    const oid = e.target.dataset.mark;
+    if(!confirm('Mark this order as processed?')) return;
+    orders = orders.filter(o => o.orderID !== oid);
+    saveOrders();
+    alert('Order marked processed (removed from list in demo).');
+  }
+});
+
+adminSendBtn.addEventListener('click', () => {
+  const txt = adminChatInput.value.trim();
+  if(!txt) return;
+  const orderID = adminChatInput.dataset.order || null;
+  const msg = { sender: 'Admin', text: txt, time: nowString(), orderID };
+  messages.push(msg); 
+  saveMessages();
+  adminChatInput.value = '';
+  adminChatInput.dataset.order = ''; 
+  adminChatInput.placeholder = 'Admin မှာ စကားရိုက်ပါ...';
+});
+
+sendMsgBtn.addEventListener('click', () => {
+  const txt = chatInput.value.trim();
+  if(!txt) return;
+  const orderID = lastUserOrderID;
+  const msg = { sender: 'User', text: txt, time: nowString(), orderID };
+  messages.push(msg); 
+  saveMessages();
+  chatInput.value = '';
+  alert('Message ပို့ပြီးပါပြီ — Admin သို့ ပြန်လည်ဆက်သွယ်မည်');
+});
+
+messagesBtn.addEventListener('click', () => {
+  chatBox.scrollIntoView({behavior:'smooth'});
+});
+
+clearChatBtn.addEventListener('click', () => {
+  if(!confirm('Messages များအားလုံး ဖျက်မှာလား?')) return;
+  messages = []; 
+  saveMessages();
+});
+
+adminClearMessages.addEventListener('click', () => {
+  if(!confirm('Messages များအားလုံး ဖျက်မှာလား?')) return;
+  messages = []; 
+  saveMessages();
+});
+
+cartBtn.addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+searchInput.addEventListener('input', renderProducts);
+
+/* ---------- Initialization ---------- */
+renderProducts();
+renderCartSummary();
+renderOrders();
+renderChat();
+
+if(products.length === 0){
+  products = [
+    { name: 'မီးဖိုချောင် စားပွဲ', price: 12000, category: 'မကြည့်', image: '' },
+    { name: 'Daiku T-Shirt', price: 8000, category: 'အဝတ်အစား', image: '' }
+  ];
+  saveProducts();
+  renderProducts();
+}
+</script>
+
+</body>
+</html>
