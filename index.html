@@ -1,562 +1,723 @@
 <!DOCTYPE html>
 <html lang="my">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Daiku - အွန်လိုင်းဆိုင် (Demo)</title>
-<style>
-  :root{--blue:#0b75c9;--green:#28a745;--orange:#ff9800}
-  body{font-family:"Noto Sans Myanmar","Segoe UI",Roboto,sans-serif;margin:0;background:#f5f7fb;color:#111}
-  header{background:var(--blue);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
-  .brand{font-weight:700}
-  .nav button{background:transparent;border:0;color:#fff;cursor:pointer;font-size:14px;margin-left:10px}
-  main{display:flex;gap:16px;padding:18px}
-  .sidebar{width:260px}
-  .products{flex:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
-  .product{background:#fff;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px;box-shadow:0 1px 4px rgba(12,20,40,0.06)}
-  .product img{height:140px;object-fit:cover;border-radius:6px;background:#eee}
-  .price{font-weight:700}
-  .btn{padding:8px 10px;border-radius:8px;border:0;cursor:pointer}
-  .btn-primary{background:var(--blue);color:#fff}
-  .btn-buy{background:var(--green);color:#fff}
-  .btn-pay{background:var(--orange);color:#fff}
-  .card{background:#fff;border-radius:8px;padding:12px;box-shadow:0 1px 4px rgba(12,20,40,0.06);margin-bottom:12px}
-  input[type="text"],input[type="number"],textarea{width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box}
-  .preview-img{width:100%;height:120px;object-fit:cover;border-radius:6px;display:none;margin-top:8px}
-  #productsEmpty{color:#666;padding:12px}
-  .small{font-size:13px;color:#444}
-  #chatMessages,#adminChatMessages{height:160px;overflow:auto;background:#fafafa;padding:8px;border-radius:6px;border:1px solid #eee}
-  .order-item{margin-bottom:8px}
-  .muted{color:#666}
-  .right-col{width:360px;max-width:100%}
-  .u-input{width:100%;padding:8px;border-radius:6px;border:1px solid #ddd;margin-bottom:6px;box-sizing:border-box}
-  .order-block{padding:8px;border-radius:6px;border:1px solid #eee;background:#fff;margin-bottom:8px}
-  hr{margin:12px 0;border:none;border-top:1px solid #eee}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daiku - Real Online Shop</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ===== RESET & BASE ===== */
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --gray: #64748b;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Noto Sans Myanmar', 'Segoe UI', sans-serif; background-color: #f1f5f9; color: var(--dark); line-height: 1.6; }
+
+        /* ===== HEADER ===== */
+        .main-header {
+            background: white;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .logo i { font-size: 1.8rem; }
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        .nav-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background 0.3s;
+        }
+        .nav-btn:hover { background: var(--primary-dark); }
+        .nav-btn.cart { background: var(--secondary); }
+        .nav-btn.cart:hover { background: #0da271; }
+
+        /* ===== MAIN LAYOUT ===== */
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 15px;
+            display: grid;
+            grid-template-columns: 250px 1fr 320px;
+            gap: 25px;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+        .sidebar-card h3 {
+            margin-bottom: 15px;
+            color: var(--primary);
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+        }
+        .search-box {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        .category-list {
+            list-style: none;
+        }
+        .category-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        .category-list li:hover { color: var(--primary); font-weight: 500; }
+        .cart-summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        .cart-total {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1.1rem;
+            margin-top: 10px;
+            border-top: 1px dashed #cbd5e1;
+            padding-top: 10px;
+        }
+        .payment-method {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f0f9ff;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        .payment-method div { margin-bottom: 5px; }
+        .copy-btn {
+            background: var(--gray);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 5px;
+            font-size: 0.8rem;
+        }
+
+        /* ===== PRODUCT GRID ===== */
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 25px;
+        }
+        .product-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+        .product-card:hover { transform: translateY(-5px); }
+        .product-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background: #f8fafc;
+        }
+        .product-info {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .product-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        .product-category {
+            color: var(--gray);
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+        .product-price {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+        .product-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: auto;
+        }
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-success {
+            background: var(--secondary);
+            color: white;
+        }
+        .btn-success:hover { background: #0da271; }
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+        .btn-warning:hover { background: #d97706; }
+
+        /* ===== RIGHT PANEL ===== */
+        .right-panel .sidebar-card { margin-bottom: 25px; }
+        .chat-box {
+            height: 250px;
+            overflow-y: auto;
+            background: #f8fafc;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        .message { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0; }
+        .message-user { color: var(--primary); font-weight: 600; }
+        .message-admin { color: var(--secondary); font-weight: 600; }
+        .message-text { margin-top: 3px; }
+        .message-time { font-size: 0.75rem; color: var(--gray); margin-top: 3px; }
+        .order-history-item {
+            background: #f8fafc;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--primary);
+        }
+
+        /* ===== ADMIN PANEL ===== */
+        .admin-panel {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+        }
+        .admin-header {
+            background: #f59e0b;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .admin-form input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+        }
+        .form-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            background: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 992px) {
+            .container { grid-template-columns: 1fr; }
+            .products-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+        }
+        @media (max-width: 576px) {
+            .products-grid { grid-template-columns: 1fr 1fr; }
+            .product-actions { grid-template-columns: 1fr; }
+            .nav-buttons { flex-wrap: wrap; }
+        }
+    </style>
 </head>
-
 <body>
-<header>
-  <div class="brand">🔷 Daiku - အွန်လိုင်းဆိုင် (Demo)</div>
-  <div class="nav">
-    <button id="messagesBtn">မက်ဆေ့ချ်</button>
-    <button id="adminToggleBtn">Admin ဝင်မည်</button>
-    <button id="cartBtn">ကတ် (<span id="cartCount">0</span>)</button>
-  </div>
-</header>
-
-<main>
-  <!-- LEFT SIDEBAR -->
-  <aside class="sidebar">
-    <div class="card">
-      <div class="small">ရှာရန်</div>
-      <input id="searchInput" placeholder="ပစ္စည်းအမည်၊ အမျိုးအစား" />
-    </div>
-
-    <div class="card">
-      <div style="font-weight:700">စျေးဝယ်ကတ်</div>
-      <div class="small">စုစုပေါင်း: <span id="cartTotalPrice">0 Ks</span></div>
-      <div id="cartItemsList" style="margin-top:8px"></div>
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <button id="checkoutBtn" class="btn btn-primary">Checkout</button>
-        <button id="clearCartBtn" class="btn">Clear</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div style="font-weight:700">Order History (User)</div>
-      <div id="orderList" class="small">မှတ်တမ်းမရှိသေးပါ</div>
-    </div>
-
-    <!-- Payment Box -->
-    <div class="card">
-      <div style="font-weight:700">💰 Payment Methods</div>
-      <div style="margin-top:10px">
-        <div><b>KPay</b></div>
-        <div id="kpayNumber">09 940790449</div>
-        <button class="btn btn-primary" onclick="copyNumber('kpayNumber')">Copy</button>
-      </div>
-      <hr>
-      <div>
-        <div><b>WavePay</b></div>
-        <div id="waveNumber">09 954204473</div>
-        <button class="btn btn-primary" onclick="copyNumber('waveNumber')">Copy</button>
-      </div>
-    </div>
-  </aside>
-
-  <!-- PRODUCTS -->
-  <section class="products" id="products"></section>
-
-  <!-- RIGHT COLUMN (Admin + Forms + Chat) -->
-  <aside class="right-col">
-    <!-- Admin Panel -->
-    <div class="card admin" id="adminPanel" style="display:none">
-      <div style="font-weight:700">Admin - ပစ္စည်း ထည့်မည်</div>
-      <form id="adminForm" class="admin-form" style="margin-top:8px">
-        <input id="pName" type="text" placeholder="ပစ္စည်းအမည်" required />
-        <input id="pPrice" type="number" placeholder="ဈေးနှုန်း (Ks)" required style="margin-top:8px"/>
-        <input id="pCategory" type="text" placeholder="အမျိုးအစား" style="margin-top:8px"/>
-        <input id="pImage" type="file" accept="image/*" style="margin-top:8px"/>
-        <img id="pPreview" class="preview-img" />
-        <div style="margin-top:8px;display:flex;gap:8px">
-          <button type="submit" class="btn btn-primary">ထည့်မည်</button>
-          <button type="button" id="adminLogout" class="btn">Admin ထွက်မည်</button>
+    <!-- HEADER -->
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo">
+                <i class="fas fa-store"></i>
+                <span>Daiku Real Shop</span>
+            </div>
+            <div class="nav-buttons">
+                <button class="nav-btn" id="messagesBtn">
+                    <i class="fas fa-comments"></i> မက်ဆေ့ချ်
+                </button>
+                <button class="nav-btn" id="adminToggleBtn">
+                    <i class="fas fa-user-cog"></i> Admin ဝင်မည်
+                </button>
+                <button class="nav-btn cart" id="cartBtn">
+                    <i class="fas fa-shopping-cart"></i> ကတ် (<span id="cartCount">0</span>)
+                </button>
+            </div>
         </div>
-      </form>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <div class="container">
+        <!-- LEFT SIDEBAR -->
+        <aside class="left-sidebar">
+            <div class="sidebar-card">
+                <h3><i class="fas fa-search"></i> ရှာဖွေရန်</h3>
+                <input type="text" id="searchInput" class="search-box" placeholder="ပစ္စည်းအမည်...">
+                
+                <h3 style="margin-top: 20px;"><i class="fas fa-list"></i> အမျိုးအစားများ</h3>
+                <ul class="category-list">
+                    <li onclick="filterCategory('all')">အားလုံး</li>
+                    <li onclick="filterCategory('electronics')">အီလက်ထရွန်းနစ်</li>
+                    <li onclick="filterCategory('fashion')">အဝတ်အစား</li>
+                    <li onclick="filterCategory('home')">အိမ်သုံးပစ္စည်း</li>
+                    <li onclick="filterCategory('kitchen')">မီးဖိုချောင်</li>
+                </ul>
+            </div>
+
+            <div class="sidebar-card">
+                <h3><i class="fas fa-shopping-cart"></i> စျေးဝယ်ကတ်</h3>
+                <div id="cartItemsList">
+                    <p style="color: var(--gray); text-align: center;">ကတ်ထဲမှာ ပစ္စည်းမရှိပါ</p>
+                </div>
+                <div class="cart-total">စုစုပေါင်း: <span id="cartTotalPrice">0</span> ကျပ်</div>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button class="btn btn-primary" id="checkoutBtn" style="flex: 1;">ငွေချေမည်</button>
+                    <button class="btn" id="clearCartBtn" style="flex: 1; background: #e2e8f0;">ကတ်ရှင်းမည်</button>
+                </div>
+            </div>
+
+            <div class="sidebar-card">
+                <h3><i class="fas fa-wallet"></i> ငွေပေးချေနည်း</h3>
+                <div class="payment-method">
+                    <div><strong>KPay</strong></div>
+                    <div id="kpayNumber">09 940790449</div>
+                    <button class="copy-btn" onclick="copyNumber('kpayNumber')">ကူးမည်</button>
+                </div>
+                <div class="payment-method">
+                    <div><strong>WavePay</strong></div>
+                    <div id="waveNumber">09 954204473</div>
+                    <button class="copy-btn" onclick="copyNumber('waveNumber')">ကူးမည်</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN PRODUCTS AREA -->
+        <main class="main-content">
+            <div class="section-title">
+                <h2><i class="fas fa-boxes"></i> ပစ္စည်းများ</h2>
+                <button class="btn btn-primary" id="addSampleProducts" style="font-size: 0.9rem;">
+                    <i class="fas fa-plus"></i> နမူနာပစ္စည်းထည့်မည်
+                </button>
+            </div>
+            
+            <div class="products-grid" id="products">
+                <!-- Products will be loaded here by JavaScript -->
+            </div>
+        </main>
+
+        <!-- RIGHT PANEL -->
+        <aside class="right-panel">
+            <!-- Admin Panel -->
+            <div class="sidebar-card admin-panel" id="adminPanel" style="display: none;">
+                <div class="admin-header">
+                    <h3><i class="fas fa-user-shield"></i> Admin Panel</h3>
+                    <button class="btn" id="adminLogout" style="background: white; color: var(--warning); padding: 5px 10px;">ထွက်မည်</button>
+                </div>
+                <div style="padding: 15px;">
+                    <h4 style="margin-bottom: 15px;">ပစ္စည်းအသစ်ထည့်မည်</h4>
+                    <form id="adminForm">
+                        <input type="text" id="pName" placeholder="ပစ္စည်းအမည်" required>
+                        <input type="number" id="pPrice" placeholder="ဈေးနှုန်း (ကျပ်)" required>
+                        <input type="text" id="pCategory" placeholder="အမျိုးအစား">
+                        <input type="text" id="pImageUrl" placeholder="ပုံ URL (လင့်)">
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary" style="flex: 1;"><i class="fas fa-plus"></i> ထည့်မည်</button>
+                            <button type="button" id="clearForm" class="btn" style="flex: 1; background: #e2e8f0;">ရှင်းမည်</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Order History -->
+            <div class="sidebar-card">
+                <h3><i class="fas fa-history"></i> အော်ဒါ မှတ်တမ်း</h3>
+                <div id="orderList">
+                    <p style="color: var(--gray); text-align: center; padding: 10px;">အော်ဒါမရှိသေးပါ</p>
+                </div>
+            </div>
+
+            <!-- Chat Box -->
+            <div class="sidebar-card">
+                <h3><i class="fas fa-comment-dots"></i> စကားပြောရန်</h3>
+                <div class="chat-box" id="chatMessages">
+                    <div class="message">
+                        <div class="message-admin">Admin:</div>
+                        <div class="message-text">ကြိုဆိုပါတယ်! မေးစရာရှိရင် မေးနိုင်ပါတယ်။</div>
+                        <div class="message-time">ယနေ့ 09:30</div>
+                    </div>
+                </div>
+                <input type="text" id="chatInput" class="search-box" placeholder="စာရိုက်ပါ...">
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button class="btn btn-primary" id="sendMsgBtn" style="flex: 1;"><i class="fas fa-paper-plane"></i> ပို့မည်</button>
+                    <button class="btn" id="clearChatBtn" style="flex: 1; background: #e2e8f0;">ရှင်းမည်</button>
+                </div>
+            </div>
+        </aside>
     </div>
 
-    <!-- Admin Orders -->
-    <div class="card admin" id="adminOrders" style="display:none;margin-top:12px">
-      <div style="font-weight:700">Admin - Customer Orders</div>
-      <div id="adminOrderList" style="margin-top:8px"></div>
-    </div>
+    <!-- FOOTER -->
+    <footer class="footer">
+        <p>© 2023 Daiku Real Shop. All rights reserved.</p>
+        <p style="margin-top: 5px; font-size: 0.9rem; color: #cbd5e1;">အွန်လိုင်းစျေးဝယ်ခြင်း အဆင်ပြေချောမွေ့စေရန်</p>
+    </footer>
 
-    <!-- Admin Chat -->
-    <div class="card admin" id="adminChat" style="display:none;margin-top:12px">
-      <div style="font-weight:700">Admin Chat</div>
-      <div id="adminChatMessages" style="margin-top:8px"></div>
-      <input id="adminChatInput" placeholder="Admin မှာ စကားရိုက်ပါ..." class="u-input" />
-      <div style="display:flex;gap:8px">
-        <button id="adminSendBtn" class="btn btn-primary">ပို့မည်</button>
-        <button id="adminClearMessages" class="btn">Clear</button>
-      </div>
-    </div>
+    <!-- JAVASCRIPT -->
+    <script>
+        // ===== APP STATE =====
+        const ADMIN_PASSWORD = '1234';
+        let products = JSON.parse(localStorage.getItem('daiku_products')) || [];
+        let cart = JSON.parse(localStorage.getItem('daiku_cart')) || [];
+        let orders = JSON.parse(localStorage.getItem('daiku_orders')) || [];
+        let currentCategory = 'all';
 
-    <!-- Checkout Form -->
-    <div class="card" id="checkoutForm" style="display:none;margin-top:12px">
-      <div style="font-weight:700">ဝယ်ယူသူ အချက်အလက်</div>
-      <input id="uName" placeholder="နာမည်" class="u-input" />
-      <input id="uPhone" placeholder="ဖုန်းနံပါတ်" class="u-input" />
-      <input id="uAddress" placeholder="နေရပ်လိပ်စာ" class="u-input" />
-      <input id="uAccount" placeholder="အကောင့် (User Account)" class="u-input" />
-      <div style="display:flex;gap:8px;">
-        <button id="confirmOrderBtn" class="btn btn-primary">အော်ဒါအတည်ပြုမည်</button>
-        <button id="cancelCheckout" class="btn">မလုပ်တော့</button>
-      </div>
-    </div>
+        // ===== INITIAL PRODUCTS =====
+        if (products.length === 0) {
+            products = [
+                { 
+                    id: 1, 
+                    name: 'iPhone 14 Pro', 
+                    price: 2500000, 
+                    category: 'electronics',
+                    image: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400'
+                },
+                { 
+                    id: 2, 
+                    name: 'ကြက်ဥကြော် ပန်းကန်', 
+                    price: 12000, 
+                    category: 'kitchen',
+                    image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w-400'
+                },
+                { 
+                    id: 3, 
+                    name: 'ရှောက်ရည်အဖြူ', 
+                    price: 8000, 
+                    category: 'fashion',
+                    image: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400'
+                },
+                { 
+                    id: 4, 
+                    name: 'LED မီးလုံး', 
+                    price: 5000, 
+                    category: 'home',
+                    image: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=400'
+                }
+            ];
+            saveProducts();
+        }
 
-    <!-- User Chat -->
-    <div class="card" id="chatBox" style="margin-top:12px">
-      <div style="font-weight:700">📩 စကားဝှက် (Admin ←→ User)</div>
-      <div id="chatMessages" style="margin-top:8px"></div>
-      <input id="chatInput" placeholder="စာရိုက်ပါ..." class="u-input" />
-      <div style="display:flex;gap:8px">
-        <button id="sendMsgBtn" class="btn btn-primary">မက်ဆေ့ချ် ပို့မည်</button>
-        <button id="clearChatBtn" class="btn">Clear</button>
-      </div>
-      <div class="muted" style="margin-top:6px;font-size:12px">
-        အော်ဒါနှင့် ပတ်သက်သော စကားများရှိပါက ရိုက်ထည့်ပါ — အော်ဒါ ID ကို auto attach လုပ်ပေးပါလိမ့်မယ်။
-      </div>
-    </div>
-  </aside>
-</main>
+        // ===== UTILITY FUNCTIONS =====
+        function saveProducts() { localStorage.setItem('daiku_products', JSON.stringify(products)); }
+        function saveCart() { localStorage.setItem('daiku_cart', JSON.stringify(cart)); renderCartSummary(); }
+        function saveOrders() { localStorage.setItem('daiku_orders', JSON.stringify(orders)); renderOrders(); }
+        function formatPrice(price) { return new Intl.NumberFormat().format(price) + ' ကျပ်'; }
+        function copyNumber(id) {
+            const text = document.getElementById(id).innerText;
+            navigator.clipboard.writeText(text).then(() => alert('ကူးယူပြီးပါပြီ: ' + text));
+        }
 
-<script>
-/* ---------- Constants & State ---------- */
-const ADMIN_PASSWORD = '1234';
+        // ===== RENDER FUNCTIONS =====
+        function renderProducts() {
+            const container = document.getElementById('products');
+            container.innerHTML = '';
+            
+            const filtered = currentCategory === 'all' 
+                ? products 
+                : products.filter(p => p.category === currentCategory);
+            
+            if (filtered.length === 0) {
+                container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--gray); padding: 40px;">ပစ္စည်းမတွေ့ပါ</p>';
+                return;
+            }
+            
+            filtered.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <img src="${product.image || 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400'}" 
+                         alt="${product.name}" 
+                         class="product-img"
+                         onerror="this.src='https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400'">
+                    <div class="product-info">
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-category">${getCategoryName(product.category)}</div>
+                        <div class="product-price">${formatPrice(product.price)}</div>
+                        <div class="product-actions">
+                            <button class="btn btn-primary" onclick="addToCart(${product.id})">
+                                <i class="fas fa-cart-plus"></i> ဝယ်မယ်
+                            </button>
+                            <button class="btn btn-success" onclick="quickCheckout(${product.id})">
+                                <i class="fas fa-bolt"></i> အမြန်ချေမည်
+                            </button>
+                        </div>
+                        <div style="display: flex; gap: 5px; margin-top: 10px;">
+                            <button class="btn btn-warning" style="flex: 1; padding: 6px;" 
+                                    onclick="showPaymentOptions(${product.id})">
+                                <i class="fas fa-mobile-alt"></i> KPay
+                            </button>
+                            <button class="btn btn-warning" style="flex: 1; padding: 6px;" 
+                                    onclick="showPaymentOptions(${product.id})">
+                                <i class="fas fa-wave-square"></i> Wave
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
 
-let products = JSON.parse(localStorage.getItem('demo_products') || '[]');
-let cart = JSON.parse(localStorage.getItem('demo_cart') || '[]');
-let orders = JSON.parse(localStorage.getItem('demo_orders') || '[]');
-let messages = JSON.parse(localStorage.getItem('demo_messages') || '[]');
-let lastUserOrderID = localStorage.getItem('demo_last_order') || null;
+        function getCategoryName(category) {
+            const names = {
+                'electronics': 'အီလက်ထရွန်းနစ်',
+                'fashion': 'အဝတ်အစား',
+                'home': 'အိမ်သုံးပစ္စည်း',
+                'kitchen': 'မီးဖိုချောင်',
+                'all': 'အားလုံး'
+            };
+            return names[category] || category;
+        }
 
-/* ---------- DOM Elements ---------- */
-const productsEl = document.getElementById('products');
-const cartCount = document.getElementById('cartCount');
-const cartTotalPrice = document.getElementById('cartTotalPrice');
-const cartItemsList = document.getElementById('cartItemsList');
-const adminPanel = document.getElementById('adminPanel');
-const adminToggleBtn = document.getElementById('adminToggleBtn');
-const adminForm = document.getElementById('adminForm');
-const pPreview = document.getElementById('pPreview');
-const pImage = document.getElementById('pImage');
-const searchInput = document.getElementById('searchInput');
-const orderList = document.getElementById('orderList');
-const checkoutBtn = document.getElementById('checkoutBtn');
-const checkoutForm = document.getElementById('checkoutForm');
-const confirmOrderBtn = document.getElementById('confirmOrderBtn');
-const cancelCheckout = document.getElementById('cancelCheckout');
-const adminOrdersPanel = document.getElementById('adminOrders');
-const adminOrderList = document.getElementById('adminOrderList');
-const adminChat = document.getElementById('adminChat');
-const adminChatMessages = document.getElementById('adminChatMessages');
-const adminChatInput = document.getElementById('adminChatInput');
-const adminSendBtn = document.getElementById('adminSendBtn');
-const messagesBtn = document.getElementById('messagesBtn');
-const chatBox = document.getElementById('chatBox');
-const chatMessages = document.getElementById('chatMessages');
-const chatInput = document.getElementById('chatInput');
-const sendMsgBtn = document.getElementById('sendMsgBtn');
-const adminLogout = document.getElementById('adminLogout');
-const cartBtn = document.getElementById('cartBtn');
-const clearCartBtn = document.getElementById('clearCartBtn');
-const clearChatBtn = document.getElementById('clearChatBtn');
-const adminClearMessages = document.getElementById('adminClearMessages');
+        function renderCartSummary() {
+            document.getElementById('cartCount').textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cartTotalPrice').textContent = formatPrice(
+                cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+            );
+            
+            const container = document.getElementById('cartItemsList');
+            if (cart.length === 0) {
+                container.innerHTML = '<p style="color: var(--gray); text-align: center;">ကတ်ထဲမှာ ပစ္စည်းမရှိပါ</p>';
+                return;
+            }
+            
+            container.innerHTML = cart.map(item => `
+                <div class="cart-summary-item">
+                    <span>${item.name} x${item.quantity}</span>
+                    <span>${formatPrice(item.price * item.quantity)}</span>
+                </div>
+            `).join('');
+        }
 
-/* ---------- Save Functions ---------- */
-function saveProducts(){ localStorage.setItem('demo_products', JSON.stringify(products)); }
-function saveCart(){ localStorage.setItem('demo_cart', JSON.stringify(cart)); renderCartSummary(); }
-function saveOrders(){ localStorage.setItem('demo_orders', JSON.stringify(orders)); renderOrders(); renderAdminOrders(); }
-function saveMessages(){ localStorage.setItem('demo_messages', JSON.stringify(messages)); renderChat(); renderAdminChat(); }
+        function renderOrders() {
+            const container = document.getElementById('orderList');
+            if (orders.length === 0) {
+                container.innerHTML = '<p style="color: var(--gray); text-align: center; padding: 10px;">အော်ဒါမရှိသေးပါ</p>';
+                return;
+            }
+            
+            container.innerHTML = orders.slice(-5).reverse().map(order => `
+                <div class="order-history-item">
+                    <div><strong>${order.id}</strong></div>
+                    <div style="font-size: 0.9rem;">${order.customer} - ${formatPrice(order.total)}</div>
+                    <div style="font-size: 0.8rem; color: var(--gray);">${order.date}</div>
+                </div>
+            `).join('');
+        }
 
-/* ---------- Utilities ---------- */
-function formatPrice(n){ return Number(n).toLocaleString() + ' Ks'; }
-function nowString(){ return new Date().toLocaleString(); }
-function copyNumber(id){
-  const text = document.getElementById(id).innerText;
-  navigator.clipboard.writeText(text).then(() => alert("Copied: " + text));
-}
+        // ===== CART FUNCTIONS =====
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            const existing = cart.find(item => item.id === productId);
+            if (existing) {
+                existing.quantity++;
+            } else {
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    quantity: 1,
+                    image: product.image
+                });
+            }
+            
+            saveCart();
+            alert(`${product.name} ကို ကတ်ထဲသို့ ထည့်ပြီးပါပြီ`);
+        }
 
-/* ---------- Render Functions ---------- */
-function renderProducts(){
-  const q = (searchInput.value || '').toLowerCase();
-  productsEl.innerHTML = '';
-  
-  if(products.length === 0){ 
-    productsEl.innerHTML = "<div id='productsEmpty'>ပစ္စည်း မရှိသေးပါ — Admin အနေနဲ့ထည့်ပါ</div>"; 
-    return; 
-  }
-  
-  products.filter(p => !q || p.name.toLowerCase().includes(q) || (p.category||'').toLowerCase().includes(q))
-    .forEach((p, idx) => {
-      const el = document.createElement('div'); 
-      el.className = 'product card';
-      el.innerHTML = `
-        <img src="${p.image||''}" alt="${p.name}">
-        <div style="font-weight:700">${p.name}</div>
-        <div class="price">${formatPrice(p.price)}</div>
-        <div class="muted">${p.category || ''}</div>
-        <div style="display:flex;gap:6px;margin-top:6px">
-          <button class="btn btn-primary" data-add="${idx}">ကတ်ထည့်မည်</button>
-          <button class="btn btn-buy" data-buy="${idx}">ယခုပေးရန်</button>
-          <button class="btn btn-pay" data-kpay="${idx}">KPay</button>
-          <button class="btn btn-pay" data-wavepay="${idx}">WavePay</button>
-        </div>
-      `;
-      productsEl.appendChild(el);
-  });
-}
+        function quickCheckout(productId) {
+            addToCart(productId);
+            document.getElementById('checkoutBtn').click();
+        }
 
-function renderCartSummary(){
-  cartCount.innerText = cart.reduce((s,i) => s + i.qty, 0);
-  const total = cart.reduce((s,i) => s + i.price * i.qty, 0);
-  cartTotalPrice.innerText = formatPrice(total);
-  
-  cartItemsList.innerHTML = '';
-  if(cart.length === 0){ 
-    cartItemsList.innerHTML = '<div class="muted">Cart အလွှတ်</div>'; 
-    return; 
-  }
-  
-  cart.forEach((c, i) => {
-    const div = document.createElement('div');
-    div.className = 'order-block';
-    div.innerHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div><b>${c.name}</b><div class="muted">${formatPrice(c.price)}</div></div>
-        <div>
-          <button class="btn" data-dec="${i}">-</button>
-          <span style="margin:0 6px">${c.qty}</span>
-          <button class="btn" data-inc="${i}">+</button>
-        </div>
-      </div>
-    `;
-    cartItemsList.appendChild(div);
-  });
-}
+        function showPaymentOptions(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            const confirmPay = confirm(`${product.name} ကို ငွေချေမှာလား?\n\nဈေးနှုန်း: ${formatPrice(product.price)}\n\nKPay သို့မဟုတ် WavePay ဖြင့် ငွေချေနိုင်ပါတယ်။`);
+            if (confirmPay) {
+                alert(`ကျေးဇူးတင်ပါတယ်!\n\n${product.name} အတွက် ငွေချေမှုကို စီစဉ်ထားပါတယ်။\n\nKPay: 09 940790449\nWavePay: 09 954204473\n\nငွေပေးချေပြီးပါက အော်ဒါနံပါတ်ကို ပို့ပေးပါ။`);
+            }
+        }
 
-function renderOrders(){
-  if(orders.length === 0){ 
-    orderList.innerText = 'မှတ်တမ်းမရှိသေးပါ'; 
-    return; 
-  }
-  
-  orderList.innerHTML = '';
-  orders.slice().reverse().forEach(o => {
-    const div = document.createElement('div');
-    div.className = 'order-block';
-    div.innerHTML = `
-      <div><b>Order ID:</b> ${o.orderID}</div>
-      <div><b>Time:</b> ${o.time}</div>
-      <div><b>Customer:</b> ${o.user.name} (${o.user.phone})</div>
-      <div class="muted">Items: ${o.items.map(it => `${it.name} x${it.qty}`).join(', ')}</div>
-    `;
-    orderList.appendChild(div);
-  });
-}
+        // ===== EVENT LISTENERS =====
+        document.getElementById('addSampleProducts').addEventListener('click', () => {
+            const newProducts = [
+                { id: Date.now(), name: 'အသစ်ထည့်ထားသောပစ္စည်း', price: 15000, category: 'home', image: '' },
+                { id: Date.now()+1, name: 'စမတ်နာရီ', price: 80000, category: 'electronics', image: '' }
+            ];
+            products.push(...newProducts);
+            saveProducts();
+            renderProducts();
+            alert('နမူနာပစ္စည်း ၂ ခု ထည့်ပြီးပါပြီ');
+        });
 
-function renderAdminOrders(){
-  adminOrderList.innerHTML = '';
-  if(orders.length === 0){ 
-    adminOrderList.innerText = 'Order မရှိသေးပါ'; 
-    return; 
-  }
-  
-  orders.slice().reverse().forEach(o => {
-    const div = document.createElement('div');
-    div.className = 'order-block';
-    div.innerHTML = `
-      <div><b>Order ID:</b> ${o.orderID}</div>
-      <div><b>Time:</b> ${o.time}</div>
-      <div><b>Customer:</b> ${o.user.name} (${o.user.phone})</div>
-      <div><b>Address:</b> ${o.user.addr}</div>
-      <div><b>Account:</b> ${o.user.acc || '-'}</div>
-      <div style="margin-top:6px"><b>Items:</b></div>
-      <div class="muted">${o.items.map(it => `- ${it.name} x${it.qty} (${formatPrice(it.price)})`).join('<br>')}</div>
-      <div style="margin-top:8px;display:flex;gap:6px">
-        <button class="btn btn-primary" data-chat="${o.orderID}">Chat</button>
-        <button class="btn" data-mark="${o.orderID}">Mark as Processed</button>
-      </div>
-    `;
-    adminOrderList.appendChild(div);
-  });
-}
+        document.getElementById('adminToggleBtn').addEventListener('click', () => {
+            const password = prompt('Admin Password ရိုက်ထည့်ပါ:');
+            if (password === ADMIN_PASSWORD) {
+                document.getElementById('adminPanel').style.display = 'block';
+                alert('Admin အကောင့်သို့ ဝင်ရောက်ပြီးပါပြီ');
+            } else {
+                alert('Password မှားယွင်းနေပါတယ်');
+            }
+        });
 
-function renderChat(){
-  chatMessages.innerHTML = messages.map(m => {
-    const idInfo = m.orderID ? ` <span class="muted">[Order:${m.orderID}]</span>` : '';
-    return `<div><b>${m.sender}</b>${idInfo}: ${m.text} <div class="muted" style="font-size:12px">${m.time}</div></div>`;
-  }).join('<hr>');
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-}
+        document.getElementById('adminForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const newProduct = {
+                id: Date.now(),
+                name: document.getElementById('pName').value,
+                price: parseInt(document.getElementById('pPrice').value) || 0,
+                category: document.getElementById('pCategory').value.toLowerCase() || 'other',
+                image: document.getElementById('pImageUrl').value || ''
+            };
+            
+            products.unshift(newProduct);
+            saveProducts();
+            renderProducts();
+            
+            e.target.reset();
+            alert('ပစ္စည်းအသစ် ထည့်သွင်းပြီးပါပြီ');
+        });
 
-function renderAdminChat(){
-  adminChatMessages.innerHTML = messages.map(m => {
-    const idInfo = m.orderID ? ` <span class="muted">[Order:${m.orderID}]</span>` : '';
-    return `<div><b>${m.sender}</b>${idInfo}: ${m.text} <div class="muted" style="font-size:12px">${m.time}</div></div>`;
-  }).join('<hr>');
-  adminChatMessages.scrollTop = adminChatMessages.scrollHeight;
-}
+        document.getElementById('checkoutBtn').addEventListener('click', () => {
+            if (cart.length === 0) {
+                alert('ကတ်ထဲမှာ ပစ္စည်းမရှိပါ');
+                return;
+            }
+            
+            const name = prompt('သင့်နာမည်ဖြည့်ပါ:');
+            if (!name) return;
+            
+            const phone = prompt('ဖုန်းနံပါတ်ဖြည့်ပါ:');
+            if (!phone) return;
+            
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const orderId = 'ORD-' + Date.now().toString().slice(-6);
+            
+            const newOrder = {
+                id: orderId,
+                customer: name,
+                phone: phone,
+                total: total,
+                date: new Date().toLocaleDateString('my-MM'),
+                items: [...cart]
+            };
+            
+            orders.push(newOrder);
+            saveOrders();
+            cart = [];
+            saveCart();
+            
+            alert(`အော်ဒါတင်ပြီးပါပြီ!\n\nအော်ဒါနံပါတ်: ${orderId}\nကျေးဇူးပြု၍ ငွေပေးချေပါ။\n\nKPay: 09 940790449\nWavePay: 09 954204473`);
+        });
 
-/* ---------- Event Listeners ---------- */
-productsEl.addEventListener('click', (e) => {
-  if(e.target.dataset.add !== undefined){
-    const idx = Number(e.target.dataset.add);
-    const p = products[idx];
-    const cartItem = cart.find(c => c.name === p.name);
-    if(cartItem) cartItem.qty++;
-    else cart.push({...p, qty:1});
-    saveCart();
-    alert(`${p.name} ကို ကတ်ထည့်ပြီးပါပြီ`);
-  }
-  
-  if(e.target.dataset.buy !== undefined){
-    const idx = Number(e.target.dataset.buy);
-    const p = products[idx];
-    cart = [{...p, qty:1}];
-    saveCart();
-    checkoutForm.style.display = 'block';
-  }
-  
-  if(e.target.dataset.kpay !== undefined || e.target.dataset.wavepay !== undefined){
-    const idx = Number(e.target.dataset.kpay || e.target.dataset.wavepay);
-    const p = products[idx];
-    const method = e.target.dataset.kpay ? 'KPay' : 'WavePay';
-    alert(`${method} ဖြင့် ${p.name} ကို စီစဉ်ထားပါ (Demo)`);
-  }
-});
+        document.getElementById('clearCartBtn').addEventListener('click', () => {
+            if (cart.length === 0) return;
+            if (confirm('ကတ်ထဲက ပစ္စည်းအားလုံးကို ဖျက်မှာလား?')) {
+                cart = [];
+                saveCart();
+            }
+        });
 
-cartItemsList.addEventListener('click', (e) => {
-  if(e.target.dataset.inc !== undefined){
-    const i = Number(e.target.dataset.inc); 
-    cart[i].qty++; 
-    saveCart();
-  }
-  
-  if(e.target.dataset.dec !== undefined){
-    const i = Number(e.target.dataset.dec);
-    cart[i].qty--; 
-    if(cart[i].qty <= 0) cart.splice(i,1);
-    saveCart();
-  }
-});
+        // ===== INITIALIZATION =====
+        function filterCategory(category) {
+            currentCategory = category;
+            renderProducts();
+            // Highlight active category
+            document.querySelectorAll('.category-list li').forEach(li => {
+                li.style.fontWeight = li.textContent.includes(getCategoryName(category)) ? '700' : '400';
+                li.style.color = li.textContent.includes(getCategoryName(category)) ? 'var(--primary)' : 'inherit';
+            });
+        }
 
-clearCartBtn.addEventListener('click', () => {
-  if(!confirm('Cart ကိုဖျက်မှာ တကယ်လား?')) return;
-  cart = []; 
-  saveCart();
-});
-
-checkoutBtn.addEventListener('click', () => {
-  if(cart.length === 0){ 
-    alert('Cart အလွတ်ပါ'); 
-    return; 
-  }
-  checkoutForm.style.display = 'block';
-});
-
-cancelCheckout.addEventListener('click', () => {
-  checkoutForm.style.display = 'none';
-});
-
-confirmOrderBtn.addEventListener('click', () => {
-  const name = document.getElementById('uName').value.trim();
-  const phone = document.getElementById('uPhone').value.trim();
-  const addr = document.getElementById('uAddress').value.trim();
-  const acc = document.getElementById('uAccount').value.trim();
-  
-  if(!name || !phone || !addr){ 
-    alert('နာမည် / ဖုန်း / လိပ်စာ ပြည့်စုံစွာ ဖြည့်ပါ'); 
-    return; 
-  }
-  
-  const orderID = 'OD' + Date.now();
-  const orderTime = nowString();
-  
-  const order = {
-    orderID,
-    time: orderTime,
-    user: { name, phone, addr, acc },
-    items: JSON.parse(JSON.stringify(cart))
-  };
-  
-  orders.push(order);
-  saveOrders();
-  
-  lastUserOrderID = orderID;
-  localStorage.setItem('demo_last_order', lastUserOrderID);
-  
-  cart = []; 
-  saveCart();
-  
-  checkoutForm.style.display = 'none';
-  document.getElementById('uName').value = '';
-  document.getElementById('uPhone').value = '';
-  document.getElementById('uAddress').value = '';
-  document.getElementById('uAccount').value = '';
-  
-  alert(`Order တင်ပြီးပါပြီ (Order ID: ${orderID})\nAdmin မှ ဆက်သွယ်သွားပါသည်။`);
-});
-
-adminToggleBtn.addEventListener('click', () => {
-  const pass = prompt('Admin Password ရိုက်ထည့်ပါ');
-  if(pass === ADMIN_PASSWORD){
-    adminPanel.style.display = 'block';
-    adminOrdersPanel.style.display = 'block';
-    adminChat.style.display = 'block';
-    adminToggleBtn.innerText = 'Admin: Logged In';
-    renderAdminOrders();
-    renderAdminChat();
-  } else {
-    alert('Password မမှန်ပါ');
-  }
-});
-
-adminLogout.addEventListener('click', () => {
-  adminPanel.style.display = 'none';
-  adminOrdersPanel.style.display = 'none';
-  adminChat.style.display = 'none';
-  adminToggleBtn.innerText = 'Admin ဝင်မည်';
-});
-
-pImage.addEventListener('change', () => {
-  const f = pImage.files[0]; 
-  if(!f) return;
-  const reader = new FileReader();
-  reader.onload = e => { 
-    pPreview.src = e.target.result; 
-    pPreview.style.display = 'block'; 
-  };
-  reader.readAsDataURL(f);
-});
-
-adminForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const newP = {
-    name: document.getElementById('pName').value || 'Unnamed',
-    price: Number(document.getElementById('pPrice').value) || 0,
-    category: document.getElementById('pCategory').value || '',
-    image: pPreview.src || ''
-  };
-  
-  products.unshift(newP);
-  saveProducts();
-  renderProducts();
-  adminForm.reset();
-  pPreview.style.display = 'none';
-  alert('ပစ္စည်းထည့်ပြီးပါပြီ');
-});
-
-adminOrderList.addEventListener('click', (e) => {
-  if(e.target.dataset.chat){
-    const oid = e.target.dataset.chat;
-    adminChat.style.display = 'block';
-    adminChatInput.placeholder = `Reply about Order ${oid} ...`;
-    adminChatInput.dataset.order = oid;
-    adminChatInput.focus();
-  }
-  
-  if(e.target.dataset.mark){
-    const oid = e.target.dataset.mark;
-    if(!confirm('Mark this order as processed?')) return;
-    orders = orders.filter(o => o.orderID !== oid);
-    saveOrders();
-    alert('Order marked processed (removed from list in demo).');
-  }
-});
-
-adminSendBtn.addEventListener('click', () => {
-  const txt = adminChatInput.value.trim();
-  if(!txt) return;
-  const orderID = adminChatInput.dataset.order || null;
-  const msg = { sender: 'Admin', text: txt, time: nowString(), orderID };
-  messages.push(msg); 
-  saveMessages();
-  adminChatInput.value = '';
-  adminChatInput.dataset.order = ''; 
-  adminChatInput.placeholder = 'Admin မှာ စကားရိုက်ပါ...';
-});
-
-sendMsgBtn.addEventListener('click', () => {
-  const txt = chatInput.value.trim();
-  if(!txt) return;
-  const orderID = lastUserOrderID;
-  const msg = { sender: 'User', text: txt, time: nowString(), orderID };
-  messages.push(msg); 
-  saveMessages();
-  chatInput.value = '';
-  alert('Message ပို့ပြီးပါပြီ — Admin သို့ ပြန်လည်ဆက်သွယ်မည်');
-});
-
-messagesBtn.addEventListener('click', () => {
-  chatBox.scrollIntoView({behavior:'smooth'});
-});
-
-clearChatBtn.addEventListener('click', () => {
-  if(!confirm('Messages များအားလုံး ဖျက်မှာလား?')) return;
-  messages = []; 
-  saveMessages();
-});
-
-adminClearMessages.addEventListener('click', () => {
-  if(!confirm('Messages များအားလုံး ဖျက်မှာလား?')) return;
-  messages = []; 
-  saveMessages();
-});
-
-cartBtn.addEventListener('click', () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-});
-
-searchInput.addEventListener('input', renderProducts);
-
-/* ---------- Initialization ---------- */
-renderProducts();
-renderCartSummary();
-renderOrders();
-renderChat();
-
-if(products.length === 0){
-  products = [
-    { name: 'မီးဖိုချောင် စားပွဲ', price: 12000, category: 'မကြည့်', image: '' },
-    { name: 'Daiku T-Shirt', price: 8000, category: 'အဝတ်အစား', image: '' }
-  ];
-  saveProducts();
-  renderProducts();
-}
-</script>
-
+        // Initialize
+        renderProducts();
+        renderCartSummary();
+        renderOrders();
+    </script>
 </body>
 </html>
