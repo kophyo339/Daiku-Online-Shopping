@@ -224,6 +224,11 @@
             color: white;
         }
         .btn-warning:hover { background: #d97706; }
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        .btn-danger:hover { background: #dc2626; }
 
         /* ===== RIGHT PANEL ===== */
         .right-panel .sidebar-card { margin-bottom: 25px; }
@@ -285,6 +290,69 @@
             margin-top: 40px;
         }
 
+        /* ===== IMAGE UPLOAD ===== */
+        .image-upload-container {
+            margin-bottom: 10px;
+        }
+        .image-preview {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 6px;
+            display: none;
+            margin-top: 8px;
+            border: 2px dashed #cbd5e1;
+        }
+        .image-upload-label {
+            display: block;
+            background: #f1f5f9;
+            padding: 10px;
+            text-align: center;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 8px;
+            border: 1px dashed #94a3b8;
+        }
+        .image-upload-label:hover {
+            background: #e2e8f0;
+        }
+
+        /* ===== PRODUCT LIST IN ADMIN ===== */
+        .product-list-admin {
+            margin-top: 20px;
+        }
+        .product-list-admin h4 {
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+        .admin-product-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .admin-product-img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        .admin-product-info {
+            flex-grow: 1;
+            margin-left: 10px;
+        }
+        .admin-product-name {
+            font-weight: 600;
+        }
+        .admin-product-price {
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+
         /* ===== RESPONSIVE ===== */
         @media (max-width: 992px) {
             .container { grid-template-columns: 1fr; }
@@ -325,7 +393,7 @@
         <aside class="left-sidebar">
             <div class="sidebar-card">
                 <h3><i class="fas fa-search"></i> ရှာဖွေရန်</h3>
-                <input type="text" id="searchInput" class="search-box" placeholder="ပစ္စည်းအမည်...">
+                <input type="text" id="searchInput" class="search-box" placeholder="ပစ္စည်းအမည်..." onkeyup="searchProducts()">
                 
                 <h3 style="margin-top: 20px;"><i class="fas fa-list"></i> အမျိုးအစားများ</h3>
                 <ul class="category-list">
@@ -367,7 +435,7 @@
         <!-- MAIN PRODUCTS AREA -->
         <main class="main-content">
             <div class="section-title">
-                <h2><i class="fas fa-boxes"></i> ပစ္စည်းများ</h2>
+                <h2><i class="fas fa-boxes"></i> ပစ္စည်းများ (<span id="productCount">0</span>)</h2>
                 <button class="btn btn-primary" id="addSampleProducts" style="font-size: 0.9rem;">
                     <i class="fas fa-plus"></i> နမူနာပစ္စည်းထည့်မည်
                 </button>
@@ -392,12 +460,28 @@
                         <input type="text" id="pName" placeholder="ပစ္စည်းအမည်" required>
                         <input type="number" id="pPrice" placeholder="ဈေးနှုန်း (ကျပ်)" required>
                         <input type="text" id="pCategory" placeholder="အမျိုးအစား">
-                        <input type="text" id="pImageUrl" placeholder="ပုံ URL (လင့်)">
+                        
+                        <div class="image-upload-container">
+                            <label for="pImage" class="image-upload-label">
+                                <i class="fas fa-cloud-upload-alt"></i> ပုံရွေးချယ်ရန်
+                            </label>
+                            <input type="file" id="pImage" accept="image/*" style="display: none;">
+                            <img id="pPreview" class="image-preview" alt="Preview">
+                        </div>
+                        
                         <div class="form-actions">
                             <button type="submit" class="btn btn-primary" style="flex: 1;"><i class="fas fa-plus"></i> ထည့်မည်</button>
                             <button type="button" id="clearForm" class="btn" style="flex: 1; background: #e2e8f0;">ရှင်းမည်</button>
                         </div>
                     </form>
+
+                    <!-- Product List for Admin (with delete option) -->
+                    <div class="product-list-admin">
+                        <h4><i class="fas fa-list"></i> ပစ္စည်းစာရင်း (ဖျက်လို့ရ)</h4>
+                        <div id="adminProductList">
+                            <!-- Products will be listed here -->
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -451,35 +535,25 @@
                     name: 'iPhone 14 Pro', 
                     price: 2500000, 
                     category: 'electronics',
-                    image: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400'
+                    image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y4ZmFmYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5Y2EzYjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5QaG9uZSB�ုံ</dGV4dD48L3N2Zz4='
                 },
                 { 
                     id: 2, 
                     name: 'ကြက်ဥကြော် ပန်းကန်', 
                     price: 12000, 
                     category: 'kitchen',
-                    image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w-400'
-                },
-                { 
-                    id: 3, 
-                    name: 'ရှောက်ရည်အဖြူ', 
-                    price: 8000, 
-                    category: 'fashion',
-                    image: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400'
-                },
-                { 
-                    id: 4, 
-                    name: 'LED မီးလုံး', 
-                    price: 5000, 
-                    category: 'home',
-                    image: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=400'
+                    image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y4ZmFmYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5Y2EzYjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ပန်းကန်</dGV4dD48L3N2Zz4='
                 }
             ];
             saveProducts();
         }
 
         // ===== UTILITY FUNCTIONS =====
-        function saveProducts() { localStorage.setItem('daiku_products', JSON.stringify(products)); }
+        function saveProducts() { 
+            localStorage.setItem('daiku_products', JSON.stringify(products)); 
+            renderProducts();
+            renderAdminProductList();
+        }
         function saveCart() { localStorage.setItem('daiku_cart', JSON.stringify(cart)); renderCartSummary(); }
         function saveOrders() { localStorage.setItem('daiku_orders', JSON.stringify(orders)); renderOrders(); }
         function formatPrice(price) { return new Intl.NumberFormat().format(price) + ' ကျပ်'; }
@@ -488,14 +562,31 @@
             navigator.clipboard.writeText(text).then(() => alert('ကူးယူပြီးပါပြီ: ' + text));
         }
 
+        // ===== IMAGE UPLOAD HANDLER =====
+        document.getElementById('pImage').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const preview = document.getElementById('pPreview');
+                preview.src = event.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        });
+
         // ===== RENDER FUNCTIONS =====
         function renderProducts() {
             const container = document.getElementById('products');
+            const productCount = document.getElementById('productCount');
             container.innerHTML = '';
             
             const filtered = currentCategory === 'all' 
                 ? products 
                 : products.filter(p => p.category === currentCategory);
+            
+            productCount.textContent = filtered.length;
             
             if (filtered.length === 0) {
                 container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--gray); padding: 40px;">ပစ္စည်းမတွေ့ပါ</p>';
@@ -506,10 +597,9 @@
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 card.innerHTML = `
-                    <img src="${product.image || 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400'}" 
+                    <img src="${product.image || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y4ZmFmYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5Y2EzYjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ပုံမရှိ</dGV4dD48L3N2Zz4='}" 
                          alt="${product.name}" 
-                         class="product-img"
-                         onerror="this.src='https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400'">
+                         class="product-img">
                     <div class="product-info">
                         <div class="product-name">${product.name}</div>
                         <div class="product-category">${getCategoryName(product.category)}</div>
@@ -536,6 +626,41 @@
                 `;
                 container.appendChild(card);
             });
+        }
+
+        // ===== ADMIN PRODUCT LIST =====
+        function renderAdminProductList() {
+            const container = document.getElementById('adminProductList');
+            container.innerHTML = '';
+            
+            if (products.length === 0) {
+                container.innerHTML = '<p style="color: var(--gray); text-align: center; padding: 10px;">ပစ္စည်းမရှိသေးပါ</p>';
+                return;
+            }
+            
+            products.forEach((product, index) => {
+                const item = document.createElement('div');
+                item.className = 'admin-product-item';
+                item.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" class="admin-product-img">
+                    <div class="admin-product-info">
+                        <div class="admin-product-name">${product.name}</div>
+                        <div class="admin-product-price">${formatPrice(product.price)}</div>
+                    </div>
+                    <button class="btn btn-danger" onclick="deleteProduct(${index})" style="padding: 5px 10px;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function deleteProduct(index) {
+            if (confirm('ဒီပစ္စည်းကို ဖျက်မှာလား?')) {
+                products.splice(index, 1);
+                saveProducts();
+                alert('ပစ္စည်း ဖျက်ပြီးပါပြီ');
+            }
         }
 
         function getCategoryName(category) {
@@ -622,22 +747,44 @@
             }
         }
 
+        // ===== SEARCH FUNCTION =====
+        function searchProducts() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const productCards = document.querySelectorAll('.product-card');
+            
+            productCards.forEach(card => {
+                const productName = card.querySelector('.product-name').textContent.toLowerCase();
+                const productCategory = card.querySelector('.product-category').textContent.toLowerCase();
+                
+                if (productName.includes(searchTerm) || productCategory.includes(searchTerm)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
         // ===== EVENT LISTENERS =====
         document.getElementById('addSampleProducts').addEventListener('click', () => {
             const newProducts = [
-                { id: Date.now(), name: 'အသစ်ထည့်ထားသောပစ္စည်း', price: 15000, category: 'home', image: '' },
-                { id: Date.now()+1, name: 'စမတ်နာရီ', price: 80000, category: 'electronics', image: '' }
+                { 
+                    id: Date.now(), 
+                    name: 'အသစ်ထည့်ထားသောပစ္စည်း', 
+                    price: 15000, 
+                    category: 'home', 
+                    image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y4ZmFmYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5Y2EzYjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5နမူနာ</dGV4dD48L3N2Zz4='
+                }
             ];
             products.push(...newProducts);
             saveProducts();
-            renderProducts();
-            alert('နမူနာပစ္စည်း ၂ ခု ထည့်ပြီးပါပြီ');
+            alert('နမူနာပစ္စည်း ထည့်ပြီးပါပြီ');
         });
 
         document.getElementById('adminToggleBtn').addEventListener('click', () => {
             const password = prompt('Admin Password ရိုက်ထည့်ပါ:');
             if (password === ADMIN_PASSWORD) {
                 document.getElementById('adminPanel').style.display = 'block';
+                renderAdminProductList();
                 alert('Admin အကောင့်သို့ ဝင်ရောက်ပြီးပါပြီ');
             } else {
                 alert('Password မှားယွင်းနေပါတယ်');
@@ -647,20 +794,34 @@
         document.getElementById('adminForm').addEventListener('submit', (e) => {
             e.preventDefault();
             
+            const name = document.getElementById('pName').value;
+            const price = parseInt(document.getElementById('pPrice').value) || 0;
+            const category = document.getElementById('pCategory').value.toLowerCase() || 'other';
+            const image = document.getElementById('pPreview').src || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y4ZmFmYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5Y2EzYjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ပုံမရှိ</dGV4dD48L3N2Zz4=';
+            
             const newProduct = {
                 id: Date.now(),
-                name: document.getElementById('pName').value,
-                price: parseInt(document.getElementById('pPrice').value) || 0,
-                category: document.getElementById('pCategory').value.toLowerCase() || 'other',
-                image: document.getElementById('pImageUrl').value || ''
+                name: name,
+                price: price,
+                category: category,
+                image: image
             };
             
             products.unshift(newProduct);
             saveProducts();
-            renderProducts();
             
+            // Reset form
             e.target.reset();
+            document.getElementById('pPreview').style.display = 'none';
+            document.getElementById('pImage').value = '';
+            
             alert('ပစ္စည်းအသစ် ထည့်သွင်းပြီးပါပြီ');
+        });
+
+        document.getElementById('clearForm').addEventListener('click', () => {
+            document.getElementById('adminForm').reset();
+            document.getElementById('pPreview').style.display = 'none';
+            document.getElementById('pImage').value = '';
         });
 
         document.getElementById('checkoutBtn').addEventListener('click', () => {
@@ -701,6 +862,10 @@
                 cart = [];
                 saveCart();
             }
+        });
+
+        document.getElementById('adminLogout').addEventListener('click', () => {
+            document.getElementById('adminPanel').style.display = 'none';
         });
 
         // ===== INITIALIZATION =====
