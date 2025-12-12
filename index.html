@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daiku - Real Online Shop</title>
+    <title>Daiku - Real Online Shop (Multi-Device)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
         /* ===== RESET & BASE ===== */
         :root {
@@ -97,6 +100,33 @@
             justify-content: center;
             margin-top: 5px;
         }
+
+        /* Connection Status */
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-left: 10px;
+        }
+        .status-online {
+            background: #d1fae5;
+            color: #059669;
+        }
+        .status-offline {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .dot-online { background: #059669; }
+        .dot-offline { background: #dc2626; }
 
         /* ===== MAIN LAYOUT ===== */
         .container {
@@ -689,6 +719,10 @@
             <div class="logo">
                 <i class="fas fa-store"></i>
                 <span>Daiku Real Shop</span>
+                <span id="connectionStatus" class="connection-status status-online">
+                    <span class="status-dot dot-online"></span>
+                    <span>Online</span>
+                </span>
             </div>
             
             <!-- HORIZONTAL NAVIGATION BAR -->
@@ -793,7 +827,7 @@
                     </div>
                     
                     <div class="messages-list" id="chatMessagesList">
-                        <!-- Messages will be loaded here -->
+                        <!-- Messages will be loaded from Firebase -->
                     </div>
                     
                     <div class="message-input-area">
@@ -909,7 +943,7 @@
             <div class="sidebar-card">
                 <h3><i class="fas fa-comment-dots"></i> စကားပြောရန်</h3>
                 <div class="chat-box" id="quickChatMessages">
-                    <!-- Quick chat messages will be loaded here -->
+                    <!-- Quick chat messages will be loaded from Firebase -->
                 </div>
                 <input type="text" id="quickChatInput" class="search-box" placeholder="စာရိုက်ပါ..." onkeypress="handleQuickChatKeyPress(event)">
                 <div style="display: flex; gap: 8px; margin-top: 8px;">
@@ -923,7 +957,7 @@
     <!-- FOOTER -->
     <footer class="footer">
         <p>© 2023 Daiku Real Shop. All rights reserved.</p>
-        <p style="margin-top: 5px; font-size: 0.85rem; color: #cbd5e1;">အွန်လိုင်းစျေးဝယ်ခြင်း အဆင်ပြေချောမွေ့စေရန်</p>
+        <p style="margin-top: 5px; font-size: 0.85rem; color: #cbd5e1;">Multi-Device Online Shopping</p>
     </footer>
 
     <!-- ORDER DETAILS MODAL -->
@@ -941,78 +975,78 @@
 
     <!-- JAVASCRIPT -->
     <script>
+        // ===== FIREBASE CONFIGURATION =====
+        // 🔴 IMPORTANT: Replace with your own Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDx6v6eF6Q7V8Q1Xq5Z8W9R0T1U2V3W4X5Y6Z",
+            authDomain: "daiku-shop.firebaseapp.com",
+            databaseURL: "https://daiku-shop-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "daiku-shop",
+            storageBucket: "daiku-shop.appspot.com",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abcdef1234567890abcdef"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        
         // ===== APP STATE =====
         const ADMIN_PASSWORD = '1234';
-        let products = JSON.parse(localStorage.getItem('daiku_products')) || [];
-        let cart = JSON.parse(localStorage.getItem('daiku_cart')) || [];
-        let orders = JSON.parse(localStorage.getItem('daiku_orders')) || [];
-        let messages = JSON.parse(localStorage.getItem('daiku_messages')) || [];
+        let products = [];
+        let cart = JSON.parse(localStorage.getItem('daiku_cart')) || []; // Cart stays local
+        let orders = [];
+        let messages = [];
         let currentCategory = 'all';
         let currentPage = 'home';
-
-        // ===== INITIAL MESSAGES =====
-        if (messages.length === 0) {
-            messages = [
-                {
-                    id: 1,
-                    sender: 'admin',
-                    text: 'ကြိုဆိုပါတယ်! မေးစရာရှိရင် မေးနိုင်ပါတယ်။',
-                    time: new Date().toLocaleTimeString('my-MM', { hour: '2-digit', minute: '2-digit' }),
-                    date: new Date().toLocaleDateString('my-MM')
-                }
-            ];
-            saveMessages();
-        }
-
-        // ===== INITIAL PRODUCTS =====
-        if (products.length === 0) {
-            products = [
-                { 
-                    id: 1, 
-                    name: 'iPhone 14 Pro', 
-                    price: 2500000, 
-                    category: 'electronics',
-                    image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y4ZmFmYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5Y2EzYjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5QaG9uZSB�ုံ</dGV4dD48L3N2Zz4='
-                },
-                { 
-                    id: 2, 
-                    name: 'ကြက်ဥကြော် ပန်းကန်', 
-                    price: 12000, 
-                    category: 'kitchen',
-                    image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y4ZmFmYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5Y2EzYjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7gnYngnYrgnYzgnY3gnYrgnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYw='
-                }
-            ];
-            saveProducts();
-        }
-
-        // ===== UTILITY FUNCTIONS =====
-        function saveProducts() { 
-            localStorage.setItem('daiku_products', JSON.stringify(products)); 
+        
+        // Firebase references
+        const productsRef = database.ref('products');
+        const ordersRef = database.ref('orders');
+        const messagesRef = database.ref('messages');
+        
+        // ===== FIREBASE LISTENERS =====
+        // Listen for products changes
+        productsRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            products = data ? Object.values(data) : [];
             renderProducts();
             renderAdminProductList();
             updateStats();
-        }
+        });
         
-        function saveCart() { 
-            localStorage.setItem('daiku_cart', JSON.stringify(cart)); 
-            renderCartSummary();
-            renderCartPage();
-            updateCartNavCount();
-        }
-        
-        function saveOrders() { 
-            localStorage.setItem('daiku_orders', JSON.stringify(orders)); 
+        // Listen for orders changes
+        ordersRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            orders = data ? Object.values(data) : [];
             renderOrders();
             updateStats();
-        }
+        });
         
-        function saveMessages() { 
-            localStorage.setItem('daiku_messages', JSON.stringify(messages)); 
+        // Listen for messages changes
+        messagesRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            messages = data ? Object.values(data) : [];
             renderMessages();
             renderQuickChat();
             updateMessageCount();
-        }
+        });
         
+        // Connection status
+        database.ref('.info/connected').on('value', (snapshot) => {
+            const isConnected = snapshot.val();
+            const statusElement = document.getElementById('connectionStatus');
+            
+            if (isConnected) {
+                statusElement.className = 'connection-status status-online';
+                statusElement.innerHTML = '<span class="status-dot dot-online"></span><span>Online</span>';
+            } else {
+                statusElement.className = 'connection-status status-offline';
+                statusElement.innerHTML = '<span class="status-dot dot-offline"></span><span>Offline</span>';
+            }
+        });
+
+        // ===== UTILITY FUNCTIONS =====
         function formatPrice(price) { 
             return new Intl.NumberFormat().format(price) + ' ကျပ်'; 
         }
@@ -1027,9 +1061,55 @@
             return now.toLocaleDateString('my-MM');
         }
         
+        function generateId() {
+            return Date.now().toString() + Math.random().toString(36).substr(2, 9);
+        }
+        
         function copyNumber(id) {
             const text = document.getElementById(id).innerText;
             navigator.clipboard.writeText(text).then(() => alert('ကူးယူပြီးပါပြီ: ' + text));
+        }
+
+        // ===== FIREBASE OPERATIONS =====
+        function addProductToFirebase(product) {
+            const newProductRef = productsRef.push();
+            product.id = newProductRef.key;
+            newProductRef.set(product);
+        }
+        
+        function updateProductInFirebase(productId, updates) {
+            productsRef.child(productId).update(updates);
+        }
+        
+        function deleteProductFromFirebase(productId) {
+            productsRef.child(productId).remove();
+        }
+        
+        function addOrderToFirebase(order) {
+            const newOrderRef = ordersRef.push();
+            order.id = newOrderRef.key;
+            order.status = 'pending';
+            order.timestamp = Date.now();
+            newOrderRef.set(order);
+        }
+        
+        function updateOrderInFirebase(orderId, updates) {
+            ordersRef.child(orderId).update(updates);
+        }
+        
+        function deleteOrderFromFirebase(orderId) {
+            ordersRef.child(orderId).remove();
+        }
+        
+        function addMessageToFirebase(message) {
+            const newMessageRef = messagesRef.push();
+            message.id = newMessageRef.key;
+            message.timestamp = Date.now();
+            newMessageRef.set(message);
+        }
+        
+        function clearMessagesFromFirebase() {
+            messagesRef.remove();
         }
 
         // ===== MESSAGE FUNCTIONS =====
@@ -1037,15 +1117,13 @@
             if (!messageText.trim()) return;
             
             const newMessage = {
-                id: Date.now(),
                 sender: 'user',
                 text: messageText,
                 time: getCurrentTime(),
                 date: getCurrentDate()
             };
             
-            messages.push(newMessage);
-            saveMessages();
+            addMessageToFirebase(newMessage);
             
             // Clear input
             if (isQuickChat) {
@@ -1066,15 +1144,13 @@
                 const randomReply = autoReplies[Math.floor(Math.random() * autoReplies.length)];
                 
                 const adminReply = {
-                    id: Date.now() + 1,
                     sender: 'admin',
                     text: randomReply,
                     time: getCurrentTime(),
                     date: getCurrentDate()
                 };
                 
-                messages.push(adminReply);
-                saveMessages();
+                addMessageToFirebase(adminReply);
             }, 1000);
         }
 
@@ -1087,7 +1163,10 @@
                 return;
             }
             
-            messages.forEach(message => {
+            // Sort messages by timestamp
+            const sortedMessages = [...messages].sort((a, b) => a.timestamp - b.timestamp);
+            
+            sortedMessages.forEach(message => {
                 const messageDiv = document.createElement('div');
                 messageDiv.className = 'message';
                 messageDiv.innerHTML = `
@@ -1109,7 +1188,8 @@
             container.innerHTML = '';
             
             // Show only last 3 messages
-            const recentMessages = messages.slice(-3);
+            const sortedMessages = [...messages].sort((a, b) => a.timestamp - b.timestamp);
+            const recentMessages = sortedMessages.slice(-3);
             
             if (recentMessages.length === 0) {
                 container.innerHTML = '<p style="color: var(--gray); text-align: center; padding: 10px; font-size: 0.8rem;">မက်ဆေ့ချ်မရှိသေးပါ</p>';
@@ -1162,8 +1242,11 @@
                 return;
             }
             
+            // Sort orders by timestamp (newest first)
+            const sortedOrders = [...orders].sort((a, b) => b.timestamp - a.timestamp);
+            
             // Show only last 5 orders
-            const recentOrders = orders.slice(-5).reverse();
+            const recentOrders = sortedOrders.slice(0, 5);
             
             recentOrders.forEach(order => {
                 const orderDiv = document.createElement('div');
@@ -1171,7 +1254,7 @@
                 orderDiv.onclick = () => showOrderDetails(order.id);
                 orderDiv.innerHTML = `
                     <div class="order-header">
-                        <div class="order-id">${order.id}</div>
+                        <div class="order-id">${order.id.substring(0, 8)}...</div>
                         <div class="order-date">${order.date}</div>
                     </div>
                     <div class="order-customer">${order.customer} (${order.phone})</div>
@@ -1251,19 +1334,14 @@
         }
 
         function markOrderAsCompleted(orderId) {
-            const orderIndex = orders.findIndex(o => o.id === orderId);
-            if (orderIndex !== -1) {
-                orders[orderIndex].status = 'completed';
-                saveOrders();
-                alert('အော်ဒါကို ပြီးပြီဟု မှတ်သားပြီးပါပြီ');
-                closeOrderModal();
-            }
+            updateOrderInFirebase(orderId, { status: 'completed' });
+            alert('အော်ဒါကို ပြီးပြီဟု မှတ်သားပြီးပါပြီ');
+            closeOrderModal();
         }
 
         function deleteOrder(orderId) {
             if (confirm('ဒီအော်ဒါကို ဖျက်မှာလား?')) {
-                orders = orders.filter(o => o.id !== orderId);
-                saveOrders();
+                deleteOrderFromFirebase(orderId);
                 alert('အော်ဒါ ဖျက်ပြီးပါပြီ');
                 closeOrderModal();
             }
@@ -1343,7 +1421,7 @@
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 card.innerHTML = `
-                    <img src="${product.image || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y4ZmFmYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5Y2EzYjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ပုံမရှိ</dGV4dD48L3N2Zz4='}" 
+                    <img src="${product.image || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y4ZmFmYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5Y2EzYjgiIHRleHQtYW5jaG9�PSJtaWRkbGUiIGR5PSIuM2VtIj5ပုံမရှိ</dGV4dD48L3N2Zz4='}" 
                          alt="${product.name}" 
                          class="product-img">
                     <div class="product-info">
@@ -1351,20 +1429,20 @@
                         <div class="product-category">${getCategoryName(product.category)}</div>
                         <div class="product-price">${formatPrice(product.price)}</div>
                         <div class="product-actions">
-                            <button class="btn btn-primary" onclick="addToCart(${product.id})">
+                            <button class="btn btn-primary" onclick="addToCart('${product.id}')">
                                 <i class="fas fa-cart-plus"></i> ဝယ်မယ်
                             </button>
-                            <button class="btn btn-success" onclick="quickCheckout(${product.id})">
+                            <button class="btn btn-success" onclick="quickCheckout('${product.id}')">
                                 <i class="fas fa-bolt"></i> အမြန်ချေမည်
                             </button>
                         </div>
                         <div style="display: flex; gap: 5px; margin-top: 10px;">
                             <button class="btn btn-warning" style="flex: 1; padding: 6px;" 
-                                    onclick="showPaymentOptions(${product.id})">
+                                    onclick="showPaymentOptions('${product.id}')">
                                 <i class="fas fa-mobile-alt"></i> KPay
                             </button>
                             <button class="btn btn-warning" style="flex: 1; padding: 6px;" 
-                                    onclick="showPaymentOptions(${product.id})">
+                                    onclick="showPaymentOptions('${product.id}')">
                                 <i class="fas fa-wave-square"></i> Wave
                             </button>
                         </div>
@@ -1384,7 +1462,7 @@
                 return;
             }
             
-            products.forEach((product, index) => {
+            products.forEach((product) => {
                 const item = document.createElement('div');
                 item.className = 'admin-product-item';
                 item.innerHTML = `
@@ -1393,7 +1471,7 @@
                         <div class="admin-product-name">${product.name}</div>
                         <div class="admin-product-price">${formatPrice(product.price)}</div>
                     </div>
-                    <button class="btn btn-danger" onclick="deleteProduct(${index})" style="padding: 5px 10px;">
+                    <button class="btn btn-danger" onclick="deleteProduct('${product.id}')" style="padding: 5px 10px;">
                         <i class="fas fa-trash"></i>
                     </button>
                 `;
@@ -1401,10 +1479,9 @@
             });
         }
 
-        function deleteProduct(index) {
+        function deleteProduct(productId) {
             if (confirm('ဒီပစ္စည်းကို ဖျက်မှာလား?')) {
-                products.splice(index, 1);
-                saveProducts();
+                deleteProductFromFirebase(productId);
                 alert('ပစ္စည်း ဖျက်ပြီးပါပြီ');
             }
         }
@@ -1495,6 +1572,13 @@
             }
         }
 
+        function saveCart() {
+            localStorage.setItem('daiku_cart', JSON.stringify(cart));
+            renderCartSummary();
+            renderCartPage();
+            updateCartNavCount();
+        }
+
         function updateCartNavCount() {
             const count = cart.reduce((sum, item) => sum + item.quantity, 0);
             document.getElementById('cartNavCount').textContent = count;
@@ -1504,12 +1588,12 @@
             const product = products.find(p => p.id === productId);
             if (!product) return;
             
-            const existing = cart.find(item => item.id === productId);
+            const existing = cart.find(item => item.productId === productId);
             if (existing) {
                 existing.quantity++;
             } else {
                 cart.push({
-                    id: product.id,
+                    productId: product.id,
                     name: product.name,
                     price: product.price,
                     quantity: 1,
@@ -1575,24 +1659,19 @@
         // Clear chat buttons
         document.getElementById('quickClearChatBtn').addEventListener('click', () => {
             if (confirm('မက်ဆေ့ချ်အားလုံးကို ဖျက်မှာလား?')) {
-                messages = [];
-                saveMessages();
+                clearMessagesFromFirebase();
             }
         });
 
         // Add sample products
         document.getElementById('addSampleProducts').addEventListener('click', () => {
-            const newProducts = [
-                { 
-                    id: Date.now(), 
-                    name: 'အသစ်ထည့်ထားသောပစ္စည်း', 
-                    price: 15000, 
-                    category: 'home', 
-                    image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaTD0iNDAwIiBmaWxsPSIjZjhmYWZjIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzljYTNiOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuahn+ahn+ahnzwvdGV4dD48L3N2Zz4='
-                }
-            ];
-            products.push(...newProducts);
-            saveProducts();
+            const newProduct = { 
+                name: 'အသစ်ထည့်ထားသောပစ္စည်း', 
+                price: 15000, 
+                category: 'home', 
+                image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y4ZmFmYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5Y2EzYjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7gnYngnYrgnYzgnY3gnYrgnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYw='
+            };
+            addProductToFirebase(newProduct);
             alert('နမူနာပစ္စည်း ထည့်ပြီးပါပြီ');
         });
 
@@ -1631,15 +1710,13 @@
             const image = document.getElementById('pPreview').src || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y4ZmFmYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5Y2EzYjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ပုံမရှိ</dGV4dD48L3N2Zz4=';
             
             const newProduct = {
-                id: Date.now(),
                 name: name,
                 price: price,
                 category: category,
                 image: image
             };
             
-            products.unshift(newProduct);
-            saveProducts();
+            addProductToFirebase(newProduct);
             
             // Reset form
             e.target.reset();
@@ -1669,24 +1746,20 @@
             if (!phone) return;
             
             const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const orderId = 'ORD-' + Date.now().toString().slice(-6);
             
             const newOrder = {
-                id: orderId,
                 customer: name,
                 phone: phone,
                 total: total,
                 date: getCurrentDate(),
-                status: 'pending',
                 items: [...cart]
             };
             
-            orders.push(newOrder);
-            saveOrders();
+            addOrderToFirebase(newOrder);
             cart = [];
             saveCart();
             
-            alert(`အော်ဒါတင်ပြီးပါပြီ!\n\nအော်ဒါနံပါတ်: ${orderId}\nကျေးဇူးပြု၍ ငွေပေးချေပါ။\n\nKPay: 09 940790449\nWavePay: 09 954204473`);
+            alert(`အော်ဒါတင်ပြီးပါပြီ!\n\nကျေးဇူးပြု၍ ငွေပေးချေပါ။\n\nKPay: 09 940790449\nWavePay: 09 954204473`);
         }
 
         document.getElementById('checkoutBtn').addEventListener('click', checkout);
@@ -1729,15 +1802,43 @@
         });
 
         // Initialize
-        renderProducts();
         renderCartSummary();
         renderCartPage();
-        renderOrders();
-        renderMessages();
-        renderQuickChat();
-        updateStats();
         updateCartNavCount();
-        updateMessageCount();
+        
+        // Add initial data if Firebase is empty
+        setTimeout(() => {
+            if (products.length === 0) {
+                const initialProducts = [
+                    { 
+                        name: 'iPhone 14 Pro', 
+                        price: 2500000, 
+                        category: 'electronics',
+                        image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y4ZmFmYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5Y2EzYjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5QaG9uZSB�ုံ</dGV4dD48L3N2Zz4='
+                    },
+                    { 
+                        name: 'ကြက်ဥကြော် ပန်းကန်', 
+                        price: 12000, 
+                        category: 'kitchen',
+                        image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y4ZmFmYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5Y2EzYjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7gnYngnYrgnYzgnY3gnYrgnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYw='
+                    }
+                ];
+                
+                initialProducts.forEach(product => {
+                    addProductToFirebase(product);
+                });
+            }
+            
+            if (messages.length === 0) {
+                const welcomeMessage = {
+                    sender: 'admin',
+                    text: 'ကြိုဆိုပါတယ်! မေးစရာရှိရင် မေးနိုင်ပါတယ်။',
+                    time: getCurrentTime(),
+                    date: getCurrentDate()
+                };
+                addMessageToFirebase(welcomeMessage);
+            }
+        }, 1000);
     </script>
 </body>
 </html>
