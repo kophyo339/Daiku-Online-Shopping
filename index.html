@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Myanmar Online Shop - Supabase with Image Upload</title>
+    <title>Myanmar Online Shop - Supabase</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -632,6 +632,27 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        .debug-info {
+            background: #fef3c7;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-size: 0.875rem;
+            color: #92400e;
+            display: none;
+        }
+
+        .debug-toggle {
+            background: var(--gray);
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            margin-left: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -646,7 +667,7 @@
             <div class="nav-links">
                 <div class="connection-status" id="connectionStatus">
                     <span class="status-dot"></span>
-                    <span>Supabase Connected</span>
+                    <span>Loading...</span>
                 </div>
                 
                 <a href="#" class="nav-link active" onclick="showPage('home')">
@@ -668,6 +689,9 @@
 
     <!-- Main Content -->
     <main class="container">
+        <!-- Debug Info -->
+        <div class="debug-info" id="debugInfo"></div>
+
         <!-- Home Page -->
         <div id="homePage" class="page">
             <div class="page-header">
@@ -754,7 +778,7 @@
                 <h2 style="margin-bottom: 1.5rem;"><i class="fas fa-lock"></i> Admin Login</h2>
                 <div class="form-group">
                     <label class="form-label">လျှို့ဝှက်နံပါတ်</label>
-                    <input type="password" id="adminPassword" class="form-input" placeholder="Password">
+                    <input type="password" id="adminPassword" class="form-input" placeholder="Password" value="admin123">
                 </div>
                 <button class="btn btn-primary btn-block" onclick="loginAdmin()">
                     <i class="fas fa-sign-in-alt"></i> ဝင်ရန်
@@ -786,7 +810,7 @@
                     
                     <!-- Image Upload Section -->
                     <div class="form-group">
-                        <label class="form-label">ပုံတင်ရန်</label>
+                        <label class="form-label">ပုံတင်ရန် (မထည့်လဲရပါတယ်)</label>
                         <div class="file-upload-container" id="fileUploadContainer" 
                              onclick="document.getElementById('imageInput').click()"
                              ondragover="handleDragOver(event)"
@@ -809,17 +833,6 @@
                                 <div class="image-preview-remove" onclick="removeSelectedImage()">
                                     <i class="fas fa-times"></i>
                                 </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Upload Progress -->
-                        <div id="uploadProgress" style="display: none; margin-top: 1rem;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                                <span>တင်နေသည်...</span>
-                                <span id="uploadPercentage">0%</span>
-                            </div>
-                            <div style="height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;">
-                                <div id="uploadProgressBar" style="height: 100%; background: var(--primary); width: 0%; transition: width 0.3s;"></div>
                             </div>
                         </div>
                     </div>
@@ -869,21 +882,6 @@
         </div>
     </div>
 
-    <!-- Order Details Modal -->
-    <div id="orderModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>အော်ဒါ အသေးစိတ်</h3>
-                <button class="btn btn-danger" onclick="closeOrderModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body" id="orderModalContent">
-                <!-- Order details will be loaded here -->
-            </div>
-        </div>
-    </div>
-
     <!-- Footer -->
     <footer class="footer">
         <p>© 2024 Myanmar Online Shop. All rights reserved.</p>
@@ -891,6 +889,7 @@
             <i class="fas fa-phone"></i> 09 940790449 | 
             <i class="fas fa-envelope"></i> info@myanmarshop.com
         </p>
+        <button class="debug-toggle" onclick="toggleDebugInfo()">Debug Info</button>
     </footer>
 
     <!-- JavaScript -->
@@ -907,6 +906,29 @@
         let currentCategory = 'all';
         let isAdminLoggedIn = false;
         let selectedImageFile = null;
+        let debugEnabled = false;
+
+        // ===== DEBUG FUNCTIONS =====
+        function toggleDebugInfo() {
+            debugEnabled = !debugEnabled;
+            document.getElementById('debugInfo').style.display = debugEnabled ? 'block' : 'none';
+            updateDebugInfo();
+        }
+
+        function updateDebugInfo() {
+            if (!debugEnabled) return;
+            
+            const debugInfo = document.getElementById('debugInfo');
+            debugInfo.innerHTML = `
+                <strong>Debug Information:</strong><br>
+                - Supabase Connected: ${!!supabase}<br>
+                - Products Count: ${products.length}<br>
+                - Cart Count: ${cart.length}<br>
+                - Selected Image: ${selectedImageFile ? selectedImageFile.name : 'None'}<br>
+                - Current Page: ${currentPage}<br>
+                - Admin Logged In: ${isAdminLoggedIn}
+            `;
+        }
 
         // ===== SUPABASE INITIALIZATION =====
         async function initializeSupabase() {
@@ -915,30 +937,33 @@
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 
                 // Test connection
-                const { data, error } = await supabase.from('products').select('count');
+                const { data, error } = await supabase.from('products').select('id').limit(1);
                 
                 if (error) {
                     console.error('Supabase connection error:', error);
-                    updateConnectionStatus(false);
+                    updateConnectionStatus(false, error.message);
+                    updateDebugInfo();
                     return false;
                 }
                 
-                updateConnectionStatus(true);
+                updateConnectionStatus(true, 'Connected to Supabase');
+                updateDebugInfo();
                 return true;
             } catch (error) {
                 console.error('Failed to initialize Supabase:', error);
-                updateConnectionStatus(false);
+                updateConnectionStatus(false, error.message);
+                updateDebugInfo();
                 return false;
             }
         }
 
-        function updateConnectionStatus(connected) {
+        function updateConnectionStatus(connected, message = '') {
             const statusElement = document.getElementById('connectionStatus');
             if (connected) {
-                statusElement.innerHTML = '<span class="status-dot"></span><span>Supabase Connected</span>';
+                statusElement.innerHTML = `<span class="status-dot"></span><span>${message || 'Supabase Connected'}</span>`;
                 statusElement.className = 'connection-status';
             } else {
-                statusElement.innerHTML = '<span class="status-dot"></span><span>Supabase Offline</span>';
+                statusElement.innerHTML = `<span class="status-dot"></span><span>${message || 'Supabase Offline'}</span>`;
                 statusElement.className = 'connection-status offline';
             }
         }
@@ -956,8 +981,7 @@
                 const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
                 const filePath = `product-images/${fileName}`;
                 
-                // Show upload progress
-                showUploadProgress(true);
+                console.log('Uploading image:', fileName);
                 
                 // Upload file to Supabase Storage
                 const { data, error } = await supabase.storage
@@ -968,42 +992,24 @@
                     });
                 
                 if (error) {
+                    console.error('Upload error:', error);
                     throw error;
                 }
+                
+                console.log('Upload successful:', data);
                 
                 // Get public URL
                 const { data: { publicUrl } } = supabase.storage
                     .from('product-images')
                     .getPublicUrl(filePath);
                 
-                showUploadProgress(false);
+                console.log('Public URL:', publicUrl);
                 return publicUrl;
             } catch (error) {
                 console.error('Image upload error:', error);
-                showUploadProgress(false);
-                showNotification('ပုံတင်ရာတွင် ပြဿနာရှိပါသည်');
+                showNotification(`ပုံတင်ရာတွင် ပြဿနာရှိပါသည်: ${error.message}`);
                 return null;
             }
-        }
-
-        function showUploadProgress(show) {
-            const progressElement = document.getElementById('uploadProgress');
-            const saveButton = document.getElementById('saveProductBtn');
-            
-            if (show) {
-                progressElement.style.display = 'block';
-                saveButton.classList.add('uploading');
-                saveButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> တင်နေသည်...';
-            } else {
-                progressElement.style.display = 'none';
-                saveButton.classList.remove('uploading');
-                saveButton.innerHTML = '<i class="fas fa-save"></i> သိမ်းရန်';
-            }
-        }
-
-        function updateUploadProgress(percentage) {
-            document.getElementById('uploadPercentage').textContent = `${percentage}%`;
-            document.getElementById('uploadProgressBar').style.width = `${percentage}%`;
         }
 
         function handleDragOver(e) {
@@ -1061,6 +1067,7 @@
                 previewContainer.style.display = 'block';
                 
                 showNotification('ပုံရွေးချယ်ပြီးပါပြီ');
+                updateDebugInfo();
             };
             reader.readAsDataURL(file);
         }
@@ -1069,77 +1076,67 @@
             selectedImageFile = null;
             document.getElementById('imagePreviewContainer').style.display = 'none';
             document.getElementById('imageInput').value = '';
+            updateDebugInfo();
         }
 
         // ===== SUPABASE DATABASE OPERATIONS =====
         async function loadProductsFromSupabase() {
             try {
+                console.log('Loading products from Supabase...');
                 const { data, error } = await supabase
                     .from('products')
                     .select('*')
                     .order('created_at', { ascending: false });
                 
-                if (error) throw error;
+                if (error) {
+                    console.error('Error loading products:', error);
+                    throw error;
+                }
                 
+                console.log('Products loaded:', data);
                 products = data || [];
                 renderProducts(products);
+                updateDebugInfo();
                 return true;
             } catch (error) {
                 console.error('Error loading products:', error);
-                showNotification('ပစ္စည်းများ လာရှိရာတွင် ပြဿနာရှိပါသည်');
+                showNotification(`ပစ္စည်းများ လာရှိရာတွင် ပြဿနာရှိပါသည်: ${error.message}`);
                 return false;
             }
         }
 
         async function addProductToSupabase(productData) {
             try {
+                console.log('Adding product to Supabase:', productData);
+                
                 const { data, error } = await supabase
                     .from('products')
                     .insert([productData])
                     .select()
                     .single();
                 
-                if (error) throw error;
+                if (error) {
+                    console.error('Error adding product:', error);
+                    throw error;
+                }
+                
+                console.log('Product added successfully:', data);
                 
                 // Add to local array
                 products.unshift(data);
-                showNotification('ပစ္စည်းအသစ် ထည့်သွင်းပြီးပါပြီ');
+                updateDebugInfo();
                 return data;
             } catch (error) {
                 console.error('Error adding product:', error);
-                showNotification('ပစ္စည်းထည့်ရာတွင် ပြဿနာရှိပါသည်');
-                return null;
-            }
-        }
-
-        async function updateProductInSupabase(productId, updates) {
-            try {
-                const { data, error } = await supabase
-                    .from('products')
-                    .update(updates)
-                    .eq('id', productId)
-                    .select()
-                    .single();
-                
-                if (error) throw error;
-                
-                // Update local array
-                const index = products.findIndex(p => p.id === productId);
-                if (index !== -1) {
-                    products[index] = { ...products[index], ...updates };
-                }
-                
-                showNotification('ပစ္စည်း ပြင်ဆင်ပြီးပါပြီ');
-                return data;
-            } catch (error) {
-                console.error('Error updating product:', error);
-                showNotification('ပစ္စည်းပြင်ဆင်ရာတွင် ပြဿနာရှိပါသည်');
+                showNotification(`ပစ္စည်းထည့်ရာတွင် ပြဿနာရှိပါသည်: ${error.message}`);
                 return null;
             }
         }
 
         async function deleteProductFromSupabase(productId) {
             try {
+                console.log('Deleting product:', productId);
+                
                 // First, get product to check for image
                 const { data: product, error: fetchError } = await supabase
                     .from('products')
@@ -1147,7 +1144,10 @@
                     .eq('id', productId)
                     .single();
                 
-                if (fetchError) throw fetchError;
+                if (fetchError) {
+                    console.error('Error fetching product:', fetchError);
+                    throw fetchError;
+                }
                 
                 // Delete from database
                 const { error } = await supabase
@@ -1155,14 +1155,23 @@
                     .delete()
                     .eq('id', productId);
                 
-                if (error) throw error;
+                if (error) {
+                    console.error('Error deleting product:', error);
+                    throw error;
+                }
                 
                 // Delete image from storage if exists
                 if (product.image_url) {
-                    const fileName = product.image_url.split('/').pop();
-                    await supabase.storage
-                        .from('product-images')
-                        .remove([`product-images/${fileName}`]);
+                    try {
+                        const fileName = product.image_url.split('/').pop();
+                        console.log('Deleting image:', fileName);
+                        
+                        await supabase.storage
+                            .from('product-images')
+                            .remove([`product-images/${fileName}`]);
+                    } catch (storageError) {
+                        console.warn('Failed to delete image from storage:', storageError);
+                    }
                 }
                 
                 // Remove from local array
@@ -1173,11 +1182,11 @@
                 localStorage.setItem('cart', JSON.stringify(cart));
                 updateCartCount();
                 
-                showNotification('ပစ္စည်း ဖျက်ပြီးပါပြီ');
+                updateDebugInfo();
                 return true;
             } catch (error) {
                 console.error('Error deleting product:', error);
-                showNotification('ပစ္စည်းဖျက်ရာတွင် ပြဿနာရှိပါသည်');
+                showNotification(`ပစ္စည်းဖျက်ရာတွင် ပြဿနာရှိပါသည်: ${error.message}`);
                 return false;
             }
         }
@@ -1194,7 +1203,7 @@
                 return data || [];
             } catch (error) {
                 console.error('Error loading orders:', error);
-                showNotification('အော်ဒါများ လာရှိရာတွင် ပြဿနာရှိပါသည်');
+                showNotification(`အော်ဒါများ လာရှိရာတွင် ပြဿနာရှိပါသည်: ${error.message}`);
                 return [];
             }
         }
@@ -1212,44 +1221,8 @@
                 return data;
             } catch (error) {
                 console.error('Error adding order:', error);
-                showNotification('အော်ဒါတင်ရာတွင် ပြဿနာရှိပါသည်');
+                showNotification(`အော်ဒါတင်ရာတွင် ပြဿနာရှိပါသည်: ${error.message}`);
                 return null;
-            }
-        }
-
-        async function updateOrderStatusInSupabase(orderId, status) {
-            try {
-                const { data, error } = await supabase
-                    .from('orders')
-                    .update({ status: status })
-                    .eq('id', orderId)
-                    .select()
-                    .single();
-                
-                if (error) throw error;
-                
-                return data;
-            } catch (error) {
-                console.error('Error updating order:', error);
-                showNotification('အော်ဒါပြင်ဆင်ရာတွင် ပြဿနာရှိပါသည်');
-                return null;
-            }
-        }
-
-        async function deleteOrderFromSupabase(orderId) {
-            try {
-                const { error } = await supabase
-                    .from('orders')
-                    .delete()
-                    .eq('id', orderId);
-                
-                if (error) throw error;
-                
-                return true;
-            } catch (error) {
-                console.error('Error deleting order:', error);
-                showNotification('အော်ဒါဖျက်ရာတွင် ပြဿနာရှိပါသည်');
-                return false;
             }
         }
 
@@ -1265,7 +1238,7 @@
                 return data || [];
             } catch (error) {
                 console.error('Error loading messages:', error);
-                showNotification('မက်ဆေ့ချ်များ လာရှိရာတွင် ပြဿနာရှိပါသည်');
+                showNotification(`မက်ဆေ့ချ်များ လာရှိရာတွင် ပြဿနာရှိပါသည်: ${error.message}`);
                 return [];
             }
         }
@@ -1283,7 +1256,7 @@
                 return data;
             } catch (error) {
                 console.error('Error adding message:', error);
-                showNotification('မက်ဆေ့ချ်ပို့ရာတွင် ပြဿနာရှိပါသည်');
+                showNotification(`မက်ဆေ့ချ်ပို့ရာတွင် ပြဿနာရှိပါသည်: ${error.message}`);
                 return null;
             }
         }
@@ -1310,6 +1283,7 @@
             
             // Update current page
             currentPage = page;
+            updateDebugInfo();
             
             // Load page content
             switch(page) {
@@ -1425,6 +1399,7 @@
             
             localStorage.setItem('cart', JSON.stringify(cart));
             updateCartCount();
+            updateDebugInfo();
             
             showNotification(`${product.name} ဈေးခြင်းထဲ ထည့်ပြီးပါပြီ!`);
         }
@@ -1435,6 +1410,7 @@
             renderCartPage();
             renderCartSummary();
             updateCartCount();
+            updateDebugInfo();
         }
 
         function updateQuantity(productId, change) {
@@ -1449,6 +1425,7 @@
                 renderCartPage();
                 renderCartSummary();
                 updateCartCount();
+                updateDebugInfo();
             }
         }
 
@@ -1559,6 +1536,7 @@
                 renderCartPage();
                 renderCartSummary();
                 updateCartCount();
+                updateDebugInfo();
                 
                 // Show payment modal
                 showPaymentModal(result);
@@ -1695,26 +1673,6 @@
             
             input.value = '';
             loadMessages();
-            
-            // Auto-reply from admin
-            setTimeout(async () => {
-                const autoReplies = [
-                    "ကျေးဇူးတင်ပါတယ်! ကျွန်တော် အမြန်ဆုံး ပြန်လည်ဖြေကြားပေးပါမယ်။",
-                    "မက်ဆေ့ချ် လက်ခံရရှိပါပြီ။ ကျေးဇူးပြု၍ စောင့်ဆိုင်းပေးပါ။",
-                    "ကျေးဇူးအများကြီးတင်ပါတယ်! သင့်မေးခွန်းကို ဖြေကြားပေးပါမယ်။",
-                    "မက်ဆေ့ချ်အတွက် ကျေးဇူးတင်ပါတယ်။ ကျွန်တော် ပြန်လည်ဆက်သွယ်ပါမယ်။"
-                ];
-                
-                const randomReply = autoReplies[Math.floor(Math.random() * autoReplies.length)];
-                const adminMessage = {
-                    text: randomReply,
-                    sender: 'admin',
-                    created_at: new Date().toISOString()
-                };
-                
-                await addMessageToSupabase(adminMessage);
-                loadMessages();
-            }, 1000);
         }
 
         // ===== ADMIN FUNCTIONS =====
@@ -1726,6 +1684,7 @@
                 document.getElementById('adminLogin').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
                 loadAdminData();
+                updateDebugInfo();
             } else {
                 showNotification('လျှို့ဝှက်နံပါတ် မှားနေပါတယ်');
             }
@@ -1792,7 +1751,20 @@
             
             // Upload image if selected
             if (selectedImageFile) {
+                showNotification('ပုံတင်နေသည်...');
+                const saveBtn = document.getElementById('saveProductBtn');
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> တင်နေသည်...';
+                saveBtn.disabled = true;
+                
                 imageUrl = await uploadImageToSupabase(selectedImageFile);
+                
+                saveBtn.innerHTML = '<i class="fas fa-save"></i> သိမ်းရန်';
+                saveBtn.disabled = false;
+                
+                if (!imageUrl) {
+                    showNotification('ပုံတင်မအောင်မြင်ပါ');
+                    return;
+                }
             }
             
             const productData = {
@@ -1817,6 +1789,8 @@
                 // Update UI
                 renderAdminProducts();
                 filterCategory(currentCategory);
+                
+                showNotification('ပစ္စည်းအသစ် ထည့်သွင်းပြီးပါပြီ');
             }
         }
 
@@ -1827,6 +1801,7 @@
             if (success) {
                 renderAdminProducts();
                 filterCategory(currentCategory);
+                showNotification('ပစ္စည်း ဖျက်ပြီးပါပြီ');
             }
         }
 
@@ -1856,106 +1831,9 @@
                         <div>ဝယ်ယူသူ: ${order.customer_name} (${order.customer_phone})</div>
                         <div>စုစုပေါင်း: ${formatPrice(order.total_amount)}</div>
                     </div>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn btn-primary" style="flex: 1;" onclick="viewOrderDetails(${order.id})">
-                            <i class="fas fa-eye"></i> အသေးစိတ်ကြည့်ရန်
-                        </button>
-                        <button class="btn btn-success" style="flex: 1;" onclick="completeOrder(${order.id})" ${order.status === 'completed' ? 'disabled' : ''}>
-                            <i class="fas fa-check"></i> ပြီးပြီဟု မှတ်မည်
-                        </button>
-                    </div>
                 `;
                 container.appendChild(div);
             });
-        }
-
-        async function viewOrderDetails(orderId) {
-            const orders = await loadOrdersFromSupabase();
-            const order = orders.find(o => o.id === orderId);
-            
-            if (!order) return;
-            
-            const content = document.getElementById('orderModalContent');
-            content.innerHTML = `
-                <div style="margin-bottom: 20px;">
-                    <div style="margin-bottom: 10px;">
-                        <strong>အော်ဒါနံပါတ်:</strong> ORD-${order.id}
-                    </div>
-                    <div style="margin-bottom: 10px;">
-                        <strong>ရက်စွဲ:</strong> ${new Date(order.created_at).toLocaleString()}
-                    </div>
-                    <div style="margin-bottom: 10px;">
-                        <strong>ဝယ်ယူသူ:</strong> ${order.customer_name}
-                    </div>
-                    <div style="margin-bottom: 10px;">
-                        <strong>ဖုန်းနံပါတ်:</strong> ${order.customer_phone}
-                    </div>
-                    <div style="margin-bottom: 10px;">
-                        <strong>အခြေအနေ:</strong> 
-                        <span class="order-status ${order.status === 'completed' ? 'status-completed' : 'status-pending'}">
-                            ${order.status === 'completed' ? 'ပြီးပြီ' : 'စောင့်ဆိုင်းနေ'}
-                        </span>
-                    </div>
-                </div>
-                
-                <h4 style="margin-bottom: 15px; color: var(--dark);">အော်ဒါပစ္စည်းများ:</h4>
-                <div style="margin-bottom: 20px;">
-                    ${JSON.parse(order.items).map(item => `
-                        <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border);">
-                            <div>${item.name} (${item.quantity} ခု)</div>
-                            <div>${formatPrice(item.price * item.quantity)}</div>
-                        </div>
-                    `).join('')}
-                </div>
-                
-                <div style="border-top: 2px solid var(--primary); padding-top: 15px;">
-                    <div style="display: flex; justify-content: space-between; font-size: 1.2rem;">
-                        <strong>စုစုပေါင်း:</strong>
-                        <strong style="color: var(--primary);">${formatPrice(order.total_amount)}</strong>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 25px; display: flex; gap: 10px;">
-                    <button class="btn btn-primary" style="flex: 1;" onclick="completeOrder(${order.id})" ${order.status === 'completed' ? 'disabled' : ''}>
-                        <i class="fas fa-check"></i> ပြီးပြီဟု မှတ်သားမည်
-                    </button>
-                    <button class="btn btn-danger" style="flex: 1;" onclick="deleteOrder(${order.id})">
-                        <i class="fas fa-trash"></i> အော်ဒါဖျက်မည်
-                    </button>
-                </div>
-            `;
-            
-            document.getElementById('orderModal').classList.add('active');
-        }
-
-        async function completeOrder(orderId) {
-            const success = await updateOrderStatusInSupabase(orderId, 'completed');
-            if (success) {
-                showNotification('အော်ဒါကို ပြီးပြီဟု မှတ်သားပြီးပါပြီ');
-                closeOrderModal();
-                
-                // Reload orders
-                const orders = await loadOrdersFromSupabase();
-                renderAdminOrders(orders);
-            }
-        }
-
-        async function deleteOrder(orderId) {
-            if (!confirm('ဒီအော်ဒါကို ဖျက်မှာလား?')) return;
-            
-            const success = await deleteOrderFromSupabase(orderId);
-            if (success) {
-                showNotification('အော်ဒါ ဖျက်ပြီးပါပြီ');
-                closeOrderModal();
-                
-                // Reload orders
-                const orders = await loadOrdersFromSupabase();
-                renderAdminOrders(orders);
-            }
-        }
-
-        function closeOrderModal() {
-            document.getElementById('orderModal').classList.remove('active');
         }
 
         // ===== UTILITY FUNCTIONS =====
@@ -1985,6 +1863,10 @@
                 updateCartCount();
             } else {
                 showNotification('Supabase ချိတ်ဆက်မှု ပြဿနာရှိပါသည်။ ကျေးဇူးပြု၍ credentials များ စစ်ဆေးပါ။');
+                
+                // Still show page for demo
+                showPage('home');
+                updateCartCount();
             }
         }
 
