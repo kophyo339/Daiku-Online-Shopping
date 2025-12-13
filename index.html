@@ -210,6 +210,12 @@
             width: 100%;
             height: 200px;
             object-fit: cover;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            font-size: 14px;
         }
         
         .product-info {
@@ -313,6 +319,12 @@
             height: 80px;
             object-fit: cover;
             border-radius: 8px;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            font-size: 12px;
         }
         
         .cart-item-info {
@@ -501,6 +513,12 @@
             height: 60px;
             object-fit: cover;
             border-radius: 8px;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            font-size: 12px;
         }
         
         .admin-product-info {
@@ -872,7 +890,7 @@
                 
                 <div class="form-group">
                     <label class="form-label">Image URL</label>
-                    <input type="text" id="pImage" class="form-input" placeholder="Image URL" onchange="previewImage()">
+                    <input type="text" id="pImage" class="form-input" placeholder="Image URL (optional)" onchange="previewImage()">
                     <img id="pPreview" style="display: none; max-width: 200px; margin-top: 10px; border-radius: 8px;">
                 </div>
                 
@@ -995,6 +1013,9 @@
         let currentCategory = 'all';
         let currentPage = 'home';
         let isConnected = true;
+
+        // Default SVG image for products
+        const DEFAULT_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y4ZmFmYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5Y2EzYjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ubyBpbWFnZTwvdGV4dD48L3N2Zz4=';
 
         // ===== SUPABASE OPERATIONS =====
         async function loadProducts() {
@@ -1161,7 +1182,7 @@
                 const { error } = await supabase
                     .from('messages')
                     .delete()
-                    .neq('id', 0); // Delete all messages
+                    .neq('id', 0);
                 
                 if (error) throw error;
                 updateConnectionStatus(true);
@@ -1271,10 +1292,10 @@
                 // Auto-reply from admin after 1 second
                 setTimeout(async () => {
                     const autoReplies = [
-                        "Thank you! I will respond as soon as possible.",
-                        "Message received. Please wait for a response.",
-                        "Thank you very much! I will answer your question.",
-                        "Thank you for your message. I will get back to you soon."
+                        "ကျေးဇူးတင်ပါတယ်! ကျွန်တော် အမြန်ဆုံး ပြန်လည်ဖြေကြားပေးပါမယ်။",
+                        "မက်ဆေ့ချ် လက်ခံရရှိပါပြီ။ ကျေးဇူးပြု၍ စောင့်ဆိုင်းပေးပါ။",
+                        "ကျေးဇူးအများကြီးတင်ပါတယ်! သင့်မေးခွန်းကို ဖြေကြားပေးပါမယ်။",
+                        "မက်ဆေ့ချ်အတွက် ကျေးဇူးတင်ပါတယ်။ ကျွန်တော် ပြန်လည်ဆက်သွယ်ပါမယ်။"
                     ];
                     
                     const randomReply = autoReplies[Math.floor(Math.random() * autoReplies.length)];
@@ -1287,7 +1308,7 @@
                     await addMessageToDB(adminReply);
                 }, 1000);
             } else {
-                alert('Failed to send message.');
+                alert('မက်ဆေ့ချ်ပို့ရာမှာ ပြဿနာရှိပါတယ်။');
             }
         }
 
@@ -1298,7 +1319,7 @@
             container.innerHTML = '';
 
             if (messages.length === 0) {
-                container.innerHTML = '<p style="color: var(--gray); text-align: center; padding: 20px;">No messages yet</p>';
+                container.innerHTML = '<p style="color: var(--gray); text-align: center; padding: 20px;">မက်ဆေ့ချ်မရှိသေးပါ</p>';
                 return;
             }
 
@@ -1310,7 +1331,7 @@
                 
                 messageDiv.innerHTML = `
                     <div class="${message.sender === 'admin' ? 'message-admin' : 'message-user'}">
-                        ${message.sender === 'admin' ? 'Admin:' : 'You:'}
+                        ${message.sender === 'admin' ? 'Admin:' : 'သင်:'}
                     </div>
                     <div class="message-text">${message.text}</div>
                     <div class="message-time">${date} ${time}</div>
@@ -1331,7 +1352,7 @@
             const recentMessages = messages.slice(-3);
 
             if (recentMessages.length === 0) {
-                container.innerHTML = '<p style="color: var(--gray); text-align: center; padding: 10px; font-size: 0.8rem;">No messages yet</p>';
+                container.innerHTML = '<p style="color: var(--gray); text-align: center; padding: 10px; font-size: 0.8rem;">မက်ဆေ့ချ်မရှိသေးပါ</p>';
                 return;
             }
 
@@ -1343,7 +1364,7 @@
                 
                 messageDiv.innerHTML = `
                     <div class="${message.sender === 'admin' ? 'message-admin' : 'message-user'}" style="font-size: 0.8rem;">
-                        ${message.sender === 'admin' ? 'Admin:' : 'You:'}
+                        ${message.sender === 'admin' ? 'Admin:' : 'သင်:'}
                     </div>
                     <div class="message-text" style="font-size: 0.75rem;">${message.text.length > 50 ? message.text.substring(0, 50) + '...' : message.text}</div>
                     <div class="message-time" style="font-size: 0.65rem;">${time}</div>
@@ -1377,7 +1398,7 @@
             container.innerHTML = '';
 
             if (orders.length === 0) {
-                container.innerHTML = '<p style="color: var(--gray); text-align: center; padding: 20px;">No orders yet</p>';
+                container.innerHTML = '<p style="color: var(--gray); text-align: center; padding: 20px;">အော်ဒါမရှိသေးပါ</p>';
                 return;
             }
 
@@ -1395,7 +1416,7 @@
                     <div class="order-customer">${order.customer} (${order.phone})</div>
                     <div class="order-amount">${formatPrice(order.total)}</div>
                     <div class="order-status ${order.status === 'completed' ? 'status-completed' : 'status-pending'}">
-                        ${order.status === 'completed' ? 'Completed' : 'Pending'}
+                        ${order.status === 'completed' ? 'ပြီးပြီ' : 'စောင့်ဆိုင်းနေ'}
                     </div>
                 `;
                 container.appendChild(orderDiv);
@@ -1409,7 +1430,7 @@
             container.innerHTML = '';
 
             if (orders.length === 0) {
-                container.innerHTML = '<p style="color: var(--gray); text-align: center; padding: 10px; font-size: 0.8rem;">No orders yet</p>';
+                container.innerHTML = '<p style="color: var(--gray); text-align: center; padding: 10px; font-size: 0.8rem;">အော်ဒါမရှိသေးပါ</p>';
                 return;
             }
 
@@ -1444,30 +1465,30 @@
             modalContent.innerHTML = `
                 <div style="margin-bottom: 15px;">
                     <div class="order-detail-item">
-                        <span>Order ID:</span>
+                        <span>အော်ဒါနံပါတ်:</span>
                         <span style="font-weight: 600;">ORD-${order.id}</span>
                     </div>
                     <div class="order-detail-item">
-                        <span>Date:</span>
+                        <span>ရက်စွဲ:</span>
                         <span>${date}</span>
                     </div>
                     <div class="order-detail-item">
-                        <span>Customer:</span>
+                        <span>ဝယ်ယူသူ:</span>
                         <span>${order.customer}</span>
                     </div>
                     <div class="order-detail-item">
-                        <span>Phone:</span>
+                        <span>ဖုန်းနံပါတ်:</span>
                         <span>${order.phone}</span>
                     </div>
                     <div class="order-detail-item">
-                        <span>Status:</span>
+                        <span>အခြေအနေ:</span>
                         <span class="order-status ${order.status === 'completed' ? 'status-completed' : 'status-pending'}">
-                            ${order.status === 'completed' ? 'Completed' : 'Pending'}
+                            ${order.status === 'completed' ? 'ပြီးပြီ' : 'စောင့်ဆိုင်းနေ'}
                         </span>
                     </div>
                 </div>
                 
-                <h4 style="margin-bottom: 10px; color: var(--dark);">Items:</h4>
+                <h4 style="margin-bottom: 10px; color: var(--dark);">အော်ဒါပစ္စည်းများ:</h4>
                 <div style="margin-bottom: 15px;">
                     ${order.items.map(item => `
                         <div class="order-detail-item">
@@ -1479,17 +1500,17 @@
                 
                 <div style="border-top: 2px solid var(--primary); padding-top: 15px;">
                     <div class="order-detail-item" style="font-size: 1.2rem;">
-                        <span>Total:</span>
+                        <span>စုစုပေါင်း:</span>
                         <span style="font-weight: 700; color: var(--primary);">${formatPrice(order.total)}</span>
                     </div>
                 </div>
                 
                 <div style="margin-top: 20px; display: flex; gap: 10px;">
                     <button class="btn btn-primary" style="flex: 1;" onclick="markOrderAsCompleted(${order.id})">
-                        <i class="fas fa-check"></i> Mark as Completed
+                        <i class="fas fa-check"></i> ပြီးပြီဟု မှတ်သားမည်
                     </button>
                     <button class="btn btn-danger" style="flex: 1;" onclick="deleteOrder(${order.id})">
-                        <i class="fas fa-trash"></i> Delete Order
+                        <i class="fas fa-trash"></i> အော်ဒါဖျက်မည်
                     </button>
                 </div>
             `;
@@ -1500,21 +1521,21 @@
         async function markOrderAsCompleted(orderId) {
             const success = await updateOrderInDB(orderId, { status: 'completed' });
             if (success) {
-                alert('Order marked as completed');
+                alert('အော်ဒါကို ပြီးပြီဟု မှတ်သားပြီးပါပြီ');
                 closeOrderModal();
             } else {
-                alert('Failed to update order status');
+                alert('အော်ဒါအခြေအနေ ပြောင်းရာမှာ ပြဿနာရှိပါတယ်။');
             }
         }
 
         async function deleteOrder(orderId) {
-            if (confirm('Are you sure you want to delete this order?')) {
+            if (confirm('ဒီအော်ဒါကို ဖျက်မှာလား?')) {
                 const success = await deleteOrderFromDB(orderId);
                 if (success) {
-                    alert('Order deleted successfully');
+                    alert('အော်ဒါ ဖျက်ပြီးပါပြီ');
                     closeOrderModal();
                 } else {
-                    alert('Failed to delete order');
+                    alert('အော်ဒါဖျက်ရာမှာ ပြဿနာရှိပါတယ်။');
                 }
             }
         }
@@ -1535,7 +1556,7 @@
                 : products.filter(p => p.category === currentCategory);
 
             if (filtered.length === 0) {
-                container.innerHTML = '<p style="color: var(--gray); text-align: center; padding: 40px; grid-column: 1/-1;">No products found</p>';
+                container.innerHTML = '<p style="color: var(--gray); text-align: center; padding: 40px; grid-column: 1/-1;">ပစ္စည်းမရှိသေးပါ</p>';
                 return;
             }
 
@@ -1543,19 +1564,19 @@
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 card.innerHTML = `
-                    <img src="${product.image || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y4ZmFmYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5Y2EzYjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7gnYngnYrgnYzgnY3gnYrgnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYw=</dGV4dD48L3N2Zz4='}" 
-                        alt="${product.name}" 
-                        class="product-img">
+                    <div class="product-img">
+                        ${product.image ? `<img src="${product.image}" style="width:100%;height:100%;object-fit:cover;">` : 'ပုံမရှိ'}
+                    </div>
                     <div class="product-info">
                         <div class="product-name">${product.name}</div>
                         <div class="product-category">${getCategoryName(product.category)}</div>
                         <div class="product-price">${formatPrice(product.price)}</div>
                         <div class="product-actions">
                             <button class="btn btn-primary" onclick="addToCart(${product.id})">
-                                <i class="fas fa-cart-plus"></i> Add to Cart
+                                <i class="fas fa-cart-plus"></i> ဝယ်မယ်
                             </button>
                             <button class="btn btn-success" onclick="quickCheckout(${product.id})">
-                                <i class="fas fa-bolt"></i> Quick Buy
+                                <i class="fas fa-bolt"></i> အမြန်ချေမည်
                             </button>
                         </div>
                         <div style="display: flex; gap: 5px; margin-top: 10px;">
@@ -1584,8 +1605,9 @@
                 const item = document.createElement('div');
                 item.className = 'admin-product-item';
                 item.innerHTML = `
-                    <img src="${product.image || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y4ZmFmYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5Y2EzYjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7gnYngnYrgnYzgnY3gnYrgnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYw=</dGV4dD48L3N2Zz4='}" 
-                         class="admin-product-img">
+                    <div class="admin-product-img">
+                        ${product.image ? `<img src="${product.image}" style="width:100%;height:100%;object-fit:cover;">` : 'ပုံမရှိ'}
+                    </div>
                     <div class="admin-product-info">
                         <div class="admin-product-name">${product.name}</div>
                         <div class="admin-product-price">${formatPrice(product.price)}</div>
@@ -1599,12 +1621,12 @@
         }
 
         async function deleteProductFromUI(productId) {
-            if (confirm('Are you sure you want to delete this product?')) {
+            if (confirm('ဒီပစ္စည်းကို ဖျက်မှာလား?')) {
                 const success = await deleteProductFromDB(productId);
                 if (success) {
-                    alert('Product deleted successfully');
+                    alert('ပစ္စည်း ဖျက်ပြီးပါပြီ');
                 } else {
-                    alert('Failed to delete product');
+                    alert('ပစ္စည်းဖျက်ရာမှာ ပြဿနာရှိပါတယ်။');
                 }
             }
         }
@@ -1640,7 +1662,7 @@
             renderCartPage();
             renderCartSummary();
             updateCartNavCount();
-            alert(`${product.name} added to cart!`);
+            alert(`${product.name} ဈေးခြင်းထဲ ထည့်ပြီးပါပြီ!`);
         }
 
         function removeFromCart(productId) {
@@ -1677,7 +1699,7 @@
             container.innerHTML = '';
 
             if (cart.length === 0) {
-                container.innerHTML = '<p style="color: var(--gray); text-align: center; padding: 40px;">Your cart is empty</p>';
+                container.innerHTML = '<p style="color: var(--gray); text-align: center; padding: 40px;">သင့်ဈေးခြင်းထဲ ဘာမှမရှိပါ</p>';
                 return;
             }
 
@@ -1685,10 +1707,12 @@
                 const div = document.createElement('div');
                 div.className = 'cart-item';
                 div.innerHTML = `
-                    <img src="${item.image}" class="cart-item-img">
+                    <div class="cart-item-img">
+                        ${item.image ? `<img src="${item.image}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">` : 'ပုံမရှိ'}
+                    </div>
                     <div class="cart-item-info">
                         <div class="cart-item-name">${item.name}</div>
-                        <div class="cart-item-price">${formatPrice(item.price)} each</div>
+                        <div class="cart-item-price">${formatPrice(item.price)} တစ်ခုစီ</div>
                     </div>
                     <div class="cart-item-actions">
                         <button class="quantity-btn" onclick="updateQuantity(${item.id}, -1)">-</button>
@@ -1716,14 +1740,14 @@
         // ===== CHECKOUT FUNCTIONS =====
         async function checkout() {
             if (cart.length === 0) {
-                alert('Your cart is empty');
+                alert('သင့်ဈေးခြင်းထဲ ဘာမှမရှိပါ');
                 return;
             }
 
-            const name = prompt('Enter your name:');
+            const name = prompt('သင့်နာမည်ထည့်ပါ:');
             if (!name) return;
 
-            const phone = prompt('Enter your phone number:');
+            const phone = prompt('ဖုန်းနံပါတ်ထည့်ပါ:');
             if (!phone) return;
 
             const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -1744,10 +1768,10 @@
                 renderCartSummary();
                 updateCartNavCount();
                 
-                alert(`Order placed successfully!\n\nOrder ID: ORD-${result.id}\nPlease make payment to:\n\nKPay: 09 940790449\nWavePay: 09 954204473`);
+                alert(`အော်ဒါတင်ပြီးပါပြီ!\n\nအော်ဒါနံပါတ်: ORD-${result.id}\nကျေးဇူးပြု၍ ငွေပေးချေပါ။\n\nKPay: 09 940790449\nWavePay: 09 954204473`);
                 showPaymentOptions();
             } else {
-                alert('Failed to place order');
+                alert('အော်ဒါတင်ရာမှာ ပြဿနာရှိပါတယ်။');
             }
         }
 
@@ -1765,22 +1789,22 @@
                 if (product) {
                     document.getElementById('paymentModalContent').innerHTML = `
                         <div style="text-align: center; padding: 20px;">
-                            <h4 style="margin-bottom: 20px; color: var(--primary);">Payment for ${product.name}</h4>
-                            <p style="margin-bottom: 20px;">Price: ${formatPrice(product.price)}</p>
+                            <h4 style="margin-bottom: 20px; color: var(--primary);">${product.name} အတွက် ငွေပေးချေရန်</h4>
+                            <p style="margin-bottom: 20px;">ဈေးနှုန်း: ${formatPrice(product.price)}</p>
                             <div class="payment-option" style="margin-bottom: 20px; padding: 15px; background: #f8fafc; border-radius: 8px;">
                                 <h5><i class="fas fa-mobile-alt"></i> KPay</h5>
                                 <p style="font-size: 1.2rem; font-weight: bold; margin: 10px 0;">09 940790449</p>
-                                <button class="btn btn-primary" onclick="copyNumber('kpayNumber')">Copy</button>
+                                <button class="btn btn-primary" onclick="copyNumber('kpayNumber')">ကူးယူရန်</button>
                                 <span id="kpayNumber" style="display: none;">09940790449</span>
                             </div>
                             <div class="payment-option" style="padding: 15px; background: #f8fafc; border-radius: 8px;">
                                 <h5><i class="fas fa-wave-square"></i> WavePay</h5>
                                 <p style="font-size: 1.2rem; font-weight: bold; margin: 10px 0;">09 954204473</p>
-                                <button class="btn btn-primary" onclick="copyNumber('waveNumber')">Copy</button>
+                                <button class="btn btn-primary" onclick="copyNumber('waveNumber')">ကူးယူရန်</button>
                                 <span id="waveNumber" style="display: none;">09954204473</span>
                             </div>
                             <p style="margin-top: 20px; color: var(--gray); font-size: 0.9rem;">
-                                After payment, please send screenshot to messages.
+                                ငွေပေးချေပြီးပါက screenshot ကို မက်ဆေ့ချ်ပို့ပေးပါ။
                             </p>
                         </div>
                     `;
@@ -1800,22 +1824,21 @@
                 document.getElementById('adminLogin').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
             } else {
-                alert('Incorrect password');
+                alert('လျှို့ဝှက်နံပါတ် မှားနေပါတယ်');
             }
         }
 
         async function addSampleProduct() {
             const newProduct = { 
-                name: 'New Sample Product', 
+                name: 'အသစ်ထည့်ထားသောပစ္စည်း', 
                 price: 15000, 
-                category: 'home', 
-                image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y4ZmFmYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5Y2EzYjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7gnYngnYrgnYzgnY3gnYrgnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYw=</dGV4dD48L3N2Zz4='
+                category: 'home'
             };
             const result = await addProductToDB(newProduct);
             if (result) {
-                alert('Sample product added');
+                alert('နမူနာပစ္စည်း ထည့်ပြီးပါပြီ');
             } else {
-                alert('Failed to add product');
+                alert('ပစ္စည်းထည့်ရာမှာ ပြဿနာရှိပါတယ်။');
             }
         }
 
@@ -1823,10 +1846,10 @@
             const name = document.getElementById('pName').value;
             const price = parseInt(document.getElementById('pPrice').value) || 0;
             const category = document.getElementById('pCategory').value;
-            const image = document.getElementById('pPreview').src || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y4ZmFmYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5Y2EzYjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7gnYngnYrgnYzgnY3gnYrgnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYw=</dGV4dD48L3N2Zz4=';
+            const image = document.getElementById('pImage').value || '';
 
             if (!name || price <= 0) {
-                alert('Please fill in all fields correctly');
+                alert('ကျေးဇူးပြု၍ အားလုံးဖြည့်ပါ');
                 return;
             }
 
@@ -1845,9 +1868,9 @@
                 document.getElementById('pImage').value = '';
                 document.getElementById('pPreview').style.display = 'none';
                 
-                alert('Product added successfully');
+                alert('ပစ္စည်းအသစ် ထည့်သွင်းပြီးပါပြီ');
             } else {
-                alert('Failed to add product');
+                alert('ပစ္စည်းထည့်ရာမှာ ပြဿနာရှိပါတယ်။');
             }
         }
 
@@ -1906,10 +1929,10 @@
 
             // Clear chat button
             document.getElementById('quickClearChatBtn').addEventListener('click', async () => {
-                if (confirm('Are you sure you want to clear all messages?')) {
+                if (confirm('မက်ဆေ့ချ်အားလုံးကို ဖျက်မှာလား?')) {
                     const success = await clearMessagesFromDB();
                     if (!success) {
-                        alert('Failed to clear messages');
+                        alert('မက်ဆေ့ချ်ဖျက်ရာမှာ ပြဿနာရှိပါတယ်။');
                     }
                 }
             });
@@ -1919,22 +1942,19 @@
                 if (products.length === 0) {
                     const initialProducts = [
                         { 
-                            name: 'Wireless Earbuds', 
+                            name: 'နားကြပ်အကြိုး', 
                             price: 25000, 
-                            category: 'electronics',
-                            image: 'https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=400&h=400&fit=crop'
+                            category: 'electronics'
                         },
                         { 
-                            name: 'Casual Shirt', 
+                            name: 'ရိုးရိုးရှပ်အင်္ကျီ', 
                             price: 12000, 
-                            category: 'fashion',
-                            image: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop'
+                            category: 'fashion'
                         },
                         { 
-                            name: 'Face Cream', 
+                            name: 'မျက်နှာခရင်မ်', 
                             price: 8500, 
-                            category: 'beauty',
-                            image: 'https://images.unsplash.com/photo-1556228578-9c360e1d8d34?w-400&h=400&fit=crop'
+                            category: 'beauty'
                         }
                     ];
 
@@ -1946,7 +1966,7 @@
                 if (messages.length === 0) {
                     const welcomeMessage = {
                         sender: 'admin',
-                        text: 'Welcome! Feel free to ask any questions.'
+                        text: 'ကြိုဆိုပါတယ်! မေးစရာရှိရင် မေးနိုင်ပါတယ်။'
                     };
                     await addMessageToDB(welcomeMessage);
                 }
