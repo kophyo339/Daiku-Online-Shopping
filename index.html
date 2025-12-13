@@ -2,47 +2,953 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Myanmar Online Shop - Fixed</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Myanmar Online Shop - Clean Design</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Same CSS as before */
         :root {
-            --primary: #3b82f6;
-            --primary-dark: #2563eb;
+            --primary: #2563eb;
+            --primary-light: #3b82f6;
+            --primary-dark: #1d4ed8;
             --secondary: #10b981;
             --danger: #ef4444;
             --dark: #1f2937;
             --gray: #6b7280;
+            --light-gray: #9ca3af;
             --light: #f9fafb;
+            --white: #ffffff;
             --border: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
         }
 
         body {
-            background: var(--light);
+            background: #f8fafc;
             color: var(--dark);
-            min-height: 100vh;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
         }
 
-        /* ... rest of CSS ... */
+        /* Header - Clean and Simple */
+        .header {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .logo i {
+            font-size: 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .nav-link {
+            padding: 8px 16px;
+            border-radius: 8px;
+            color: var(--dark);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            background: var(--light);
+        }
+
+        .nav-link.active {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .cart-badge {
+            background: var(--danger);
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: -4px;
+            right: -4px;
+        }
+
+        .cart-link {
+            position: relative;
+        }
+
+        /* Main Content */
+        .main-container {
+            max-width: 1200px;
+            margin: 80px auto 40px;
+            padding: 0 16px;
+            width: 100%;
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: var(--gray);
+            font-size: 14px;
+        }
+
+        /* Categories */
+        .categories-container {
+            margin-bottom: 24px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        .categories {
+            display: flex;
+            gap: 8px;
+            padding: 0 4px;
+            min-width: min-content;
+        }
+
+        .category-btn {
+            padding: 8px 16px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--dark);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .category-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .category-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: var(--white);
+        }
+
+        /* Products Grid - Clean Layout */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            width: 100%;
+        }
+
+        .product-card {
+            background: var(--white);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+
+        .product-image-container {
+            width: 100%;
+            height: 200px;
+            background: #f1f5f9;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .product-card:hover .product-image {
+            transform: scale(1.05);
+        }
+
+        .no-image {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--light-gray);
+        }
+
+        .no-image i {
+            font-size: 48px;
+            margin-bottom: 8px;
+        }
+
+        .no-image span {
+            font-size: 14px;
+        }
+
+        .product-content {
+            padding: 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+
+        .product-category {
+            font-size: 12px;
+            color: var(--gray);
+            background: var(--light);
+            padding: 2px 8px;
+            border-radius: 12px;
+            display: inline-block;
+            margin-bottom: 12px;
+            align-self: flex-start;
+        }
+
+        .product-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 16px;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: auto;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-success {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #0da271;
+        }
+
+        /* Cart Page */
+        .cart-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            color: var(--light-gray);
+            margin-bottom: 16px;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            color: var(--gray);
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .cart-items {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .cart-item {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid var(--border);
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .cart-item-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #f1f5f9;
+            flex-shrink: 0;
+        }
+
+        .cart-item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .cart-item-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .cart-item-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 4px;
+        }
+
+        .cart-item-price {
+            font-size: 14px;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .cart-item-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .quantity-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--white);
+            color: var(--dark);
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .quantity-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .quantity {
+            min-width: 36px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .cart-item-total {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+            min-width: 100px;
+            text-align: right;
+        }
+
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border-radius: 8px;
+            flex: none;
+        }
+
+        .btn-icon i {
+            font-size: 16px;
+        }
+
+        /* Cart Summary */
+        .cart-summary {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            margin-top: 24px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+            font-size: 18px;
+            font-weight: 700;
+            padding-top: 16px;
+        }
+
+        /* Admin Panel - Clean Design */
+        .admin-panel {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .admin-form {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 6px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            background: var(--white);
+            cursor: pointer;
+        }
+
+        .file-upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 32px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--light);
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--primary);
+            background: #f0f9ff;
+        }
+
+        .file-upload-area i {
+            font-size: 32px;
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+
+        .file-upload-area p {
+            color: var(--gray);
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .file-upload-area small {
+            color: var(--light-gray);
+            font-size: 12px;
+        }
+
+        .image-preview {
+            width: 100%;
+            height: 200px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .remove-image-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--danger);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        /* Admin Products List */
+        .admin-products-list {
+            background: var(--white);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .admin-product-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            gap: 16px;
+        }
+
+        .admin-product-item:last-child {
+            border-bottom: none;
+        }
+
+        .admin-product-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #f1f5f9;
+            flex-shrink: 0;
+        }
+
+        .admin-product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .admin-product-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .admin-product-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 4px;
+        }
+
+        .admin-product-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 14px;
+        }
+
+        .admin-product-price {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .admin-product-category {
+            color: var(--gray);
+        }
+
+        .admin-product-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 16px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--white);
+            border-radius: 12px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        /* Connection Status */
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .connection-status.offline {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            z-index: 3000;
+            animation: notificationSlideIn 0.3s ease;
+            max-width: 320px;
+        }
+
+        @keyframes notificationSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes notificationSlideOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+
+        /* Loading Spinner */
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading p {
+            color: var(--gray);
+            font-size: 14px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links {
+                gap: 2px;
+            }
+            
+            .nav-link {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+            
+            .nav-link span {
+                display: none;
+            }
+            
+            .nav-link i {
+                margin: 0;
+                font-size: 16px;
+            }
+            
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+                gap: 16px;
+            }
+            
+            .cart-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 12px;
+            }
+            
+            .cart-item-details {
+                text-align: center;
+            }
+            
+            .cart-item-total {
+                text-align: center;
+                min-width: auto;
+            }
+            
+            .product-actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .main-container {
+                margin: 70px auto 24px;
+                padding: 0 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .page-title {
+                font-size: 20px;
+            }
+            
+            .modal {
+                max-height: 80vh;
+            }
+            
+            .admin-product-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 12px;
+            }
+            
+            .admin-product-meta {
+                justify-content: center;
+            }
+        }
+
+        /* Hide scrollbar for categories */
+        .categories-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .categories-container {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Ensure consistent font sizes */
+        html {
+            font-size: 16px;
+        }
+
+        /* Improve button consistency */
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Better focus states */
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        /* Smooth transitions */
+        .product-card,
+        .btn,
+        .category-btn,
+        .nav-link {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
     </style>
 </head>
 <body>
     <!-- Header -->
     <header class="header">
-        <nav class="nav">
-            <div class="logo">
-                <i class="fas fa-shopping-bag"></i>
+        <div class="nav-container">
+            <a href="#" class="logo" onclick="showPage('home'); return false;">
+                <i class="fas fa-store"></i>
                 <span>Myanmar Shop</span>
-            </div>
+            </a>
             
             <div class="nav-links">
                 <div class="connection-status" id="connectionStatus">
@@ -50,54 +956,60 @@
                     <span>Loading...</span>
                 </div>
                 
-                <a href="#" class="nav-link active" onclick="showPage('home')">
-                    <i class="fas fa-home"></i> ပင်မစာမျက်နှာ
+                <a href="#" class="nav-link active" onclick="showPage('home'); return false;">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
                 </a>
-                <a href="#" class="nav-link" onclick="showPage('cart')">
-                    <i class="fas fa-shopping-cart"></i> ဈေးခြင်း
-                    <span id="cartCount" class="cart-count">0</span>
+                <a href="#" class="nav-link cart-link" onclick="showPage('cart'); return false;">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Cart</span>
+                    <span id="cartCount" class="cart-badge">0</span>
                 </a>
-                <a href="#" class="nav-link" onclick="showPage('messages')">
-                    <i class="fas fa-comments"></i> မက်ဆေ့ချ်များ
+                <a href="#" class="nav-link" onclick="showPage('messages'); return false;">
+                    <i class="fas fa-comments"></i>
+                    <span>Messages</span>
                 </a>
-                <a href="#" class="nav-link" onclick="showPage('admin')">
-                    <i class="fas fa-cog"></i> Admin
+                <a href="#" class="nav-link" onclick="showPage('admin'); return false;">
+                    <i class="fas fa-cog"></i>
+                    <span>Admin</span>
                 </a>
             </div>
-        </nav>
+        </div>
     </header>
 
     <!-- Main Content -->
-    <main class="container">
+    <main class="main-container">
         <!-- Home Page -->
         <div id="homePage" class="page">
             <div class="page-header">
-                <h1 class="page-title">ပစ္စည်းများ</h1>
-                <p class="page-subtitle">အရည်အသွေးကောင်း ပစ္စည်းများကို ဈေးနှုန်းချိုသာစွာဖြင့်</p>
+                <h1 class="page-title">Products</h1>
+                <p class="page-subtitle">High quality products at affordable prices</p>
             </div>
 
             <!-- Categories -->
-            <div class="categories">
-                <button class="category-btn active" onclick="filterCategory('all')">အားလုံး</button>
-                <button class="category-btn" onclick="filterCategory('electronics')">
-                    <i class="fas fa-laptop"></i> လျှပ်စစ်ပစ္စည်း
-                </button>
-                <button class="category-btn" onclick="filterCategory('fashion')">
-                    <i class="fas fa-tshirt"></i> အဝတ်အထည်
-                </button>
-                <button class="category-btn" onclick="filterCategory('beauty')">
-                    <i class="fas fa-spa"></i> အလှအပပစ္စည်း
-                </button>
-                <button class="category-btn" onclick="filterCategory('home')">
-                    <i class="fas fa-home"></i> အိမ်သုံးပစ္စည်း
-                </button>
+            <div class="categories-container">
+                <div class="categories">
+                    <button class="category-btn active" onclick="filterCategory('all')">All</button>
+                    <button class="category-btn" onclick="filterCategory('electronics')">
+                        <i class="fas fa-laptop"></i> Electronics
+                    </button>
+                    <button class="category-btn" onclick="filterCategory('fashion')">
+                        <i class="fas fa-tshirt"></i> Fashion
+                    </button>
+                    <button class="category-btn" onclick="filterCategory('beauty')">
+                        <i class="fas fa-spa"></i> Beauty
+                    </button>
+                    <button class="category-btn" onclick="filterCategory('home')">
+                        <i class="fas fa-home"></i> Home
+                    </button>
+                </div>
             </div>
 
             <!-- Products Grid -->
             <div id="productsContainer" class="products-grid">
                 <div class="loading">
-                    <div class="loading-spinner"></div>
-                    <p>ပစ္စည်းများ လာရှိနေသည်...</p>
+                    <div class="spinner"></div>
+                    <p>Loading products...</p>
                 </div>
             </div>
         </div>
@@ -105,16 +1017,23 @@
         <!-- Cart Page -->
         <div id="cartPage" class="page" style="display: none;">
             <div class="page-header">
-                <h1 class="page-title">သင့်ဈေးခြင်း</h1>
-                <p class="page-subtitle">သင် ရွေးချယ်ထားသော ပစ္စည်းများ</p>
+                <h1 class="page-title">Your Cart</h1>
+                <p class="page-subtitle">Review your selected items</p>
             </div>
 
-            <div id="cartContainer">
-                <!-- Cart items will be loaded here -->
+            <div id="cartContainer" class="cart-container">
+                <div class="empty-state">
+                    <i class="fas fa-shopping-cart"></i>
+                    <h3>Your cart is empty</h3>
+                    <p>Add some products to get started</p>
+                    <button class="btn btn-primary" onclick="showPage('home')">
+                        <i class="fas fa-shopping-bag"></i> Browse Products
+                    </button>
+                </div>
             </div>
 
             <!-- Cart Summary -->
-            <div id="cartSummary" class="cart-summary">
+            <div id="cartSummary" class="cart-summary" style="display: none;">
                 <!-- Summary will be loaded here -->
             </div>
         </div>
@@ -122,122 +1041,113 @@
         <!-- Messages Page -->
         <div id="messagesPage" class="page" style="display: none;">
             <div class="page-header">
-                <h1 class="page-title">မက်ဆေ့ချ်များ</h1>
-                <p class="page-subtitle">အုပ်ချုပ်သူနှင့် ဆက်သွယ်ရန်</p>
+                <h1 class="page-title">Messages</h1>
+                <p class="page-subtitle">Contact the admin</p>
             </div>
 
-            <div class="messages-container" id="messagesContainer">
-                <div class="loading">
-                    <div class="loading-spinner"></div>
-                    <p>မက်ဆေ့ချ်များ လာရှိနေသည်...</p>
+            <div class="messages-container">
+                <div id="messagesContainer" class="admin-form">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading messages...</p>
+                    </div>
                 </div>
-            </div>
 
-            <div class="message-input">
-                <input type="text" id="messageInput" class="form-input" 
-                       placeholder="မက်ဆေ့ချ်ရိုက်ထည့်ပါ..." 
-                       onkeypress="if(event.key === 'Enter') sendMessage()">
-                <button class="btn btn-primary" onclick="sendMessage()">
-                    <i class="fas fa-paper-plane"></i> ပို့ရန်
-                </button>
+                <div class="message-input" style="margin-top: 20px;">
+                    <input type="text" id="messageInput" class="form-input" 
+                           placeholder="Type your message..." 
+                           onkeypress="if(event.key === 'Enter') sendMessage()">
+                    <button class="btn btn-primary" onclick="sendMessage()" style="margin-top: 10px; width: 100%;">
+                        <i class="fas fa-paper-plane"></i> Send Message
+                    </button>
+                </div>
             </div>
         </div>
 
         <!-- Admin Page -->
         <div id="adminPage" class="page" style="display: none;">
             <div class="page-header">
-                <h1 class="page-title">အုပ်ချုပ်သူ Panel</h1>
-                <p class="page-subtitle">ပစ္စည်းများနှင့် အော်ဒါများကို စီမံရန်</p>
+                <h1 class="page-title">Admin Panel</h1>
+                <p class="page-subtitle">Manage products and orders</p>
             </div>
 
             <!-- Admin Login -->
             <div id="adminLogin" class="admin-form">
-                <h2 style="margin-bottom: 1.5rem;"><i class="fas fa-lock"></i> Admin Login</h2>
+                <h2 style="margin-bottom: 20px; font-size: 18px; color: var(--dark);">
+                    <i class="fas fa-lock"></i> Admin Login
+                </h2>
                 <div class="form-group">
-                    <label class="form-label">လျှို့ဝှက်နံပါတ်</label>
-                    <input type="password" id="adminPassword" class="form-input" placeholder="Password" value="admin123">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="adminPassword" class="form-input" placeholder="Enter password" value="admin123">
                 </div>
-                <button class="btn btn-primary btn-block" onclick="loginAdmin()">
-                    <i class="fas fa-sign-in-alt"></i> ဝင်ရန်
+                <button class="btn btn-primary" onclick="loginAdmin()" style="width: 100%;">
+                    <i class="fas fa-sign-in-alt"></i> Login
                 </button>
             </div>
 
             <!-- Admin Panel -->
-            <div id="adminPanel" class="admin-panel">
+            <div id="adminPanel" class="admin-panel" style="display: none;">
                 <!-- Add Product Form -->
                 <div class="admin-form">
-                    <h2 style="margin-bottom: 1.5rem;"><i class="fas fa-plus"></i> ပစ္စည်းအသစ်ထည့်ရန်</h2>
+                    <h2 style="margin-bottom: 20px; font-size: 18px; color: var(--dark);">
+                        <i class="fas fa-plus"></i> Add New Product
+                    </h2>
                     <div class="form-group">
-                        <label class="form-label">ပစ္စည်းအမည် <span style="color: var(--danger);">*</span></label>
-                        <input type="text" id="pName" class="form-input" placeholder="ပစ္စည်းအမည်" required>
+                        <label class="form-label">Product Name *</label>
+                        <input type="text" id="pName" class="form-input" placeholder="Enter product name">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">ဈေးနှုန်း (ကျပ်) <span style="color: var(--danger);">*</span></label>
-                        <input type="number" id="pPrice" class="form-input" placeholder="ဈေးနှုန်း" min="1" required>
+                        <label class="form-label">Price (MMK) *</label>
+                        <input type="number" id="pPrice" class="form-input" placeholder="Enter price" min="1">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">အမျိုးအစား <span style="color: var(--danger);">*</span></label>
-                        <select id="pCategory" class="form-input" required>
-                            <option value="">ရွေးချယ်ပါ</option>
-                            <option value="electronics">လျှပ်စစ်ပစ္စည်း</option>
-                            <option value="fashion">အဝတ်အထည်</option>
-                            <option value="beauty">အလှအပပစ္စည်း</option>
-                            <option value="home">အိမ်သုံးပစ္စည်း</option>
+                        <label class="form-label">Category *</label>
+                        <select id="pCategory" class="form-select">
+                            <option value="">Select category</option>
+                            <option value="electronics">Electronics</option>
+                            <option value="fashion">Fashion</option>
+                            <option value="beauty">Beauty</option>
+                            <option value="home">Home</option>
                         </select>
                     </div>
                     
-                    <!-- Image Upload Section -->
+                    <!-- Image Upload -->
                     <div class="form-group">
-                        <label class="form-label">ပုံတင်ရန် (Optional)</label>
-                        <div class="file-upload-container" id="fileUploadContainer" 
-                             onclick="document.getElementById('imageInput').click()"
-                             ondragover="handleDragOver(event)"
-                             ondragleave="handleDragLeave(event)"
-                             ondrop="handleDrop(event)">
-                            <div class="file-upload-icon">
-                                <i class="fas fa-cloud-upload-alt"></i>
-                            </div>
-                            <p>ပုံကို ဒီမှာ ဆွဲချချပါ သို့မဟုတ် နှိပ်ပါ</p>
-                            <p style="font-size: 0.875rem; color: var(--gray); margin-top: 0.5rem;">
-                                PNG, JPG, JPEG ဖိုင်များသာ (အများဆုံး 5MB)
-                            </p>
+                        <label class="form-label">Product Image (Optional)</label>
+                        <div class="file-upload-area" id="fileUploadContainer" onclick="document.getElementById('imageInput').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Drag & drop or click to upload</p>
+                            <small>PNG, JPG up to 5MB</small>
                         </div>
                         <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
                         
                         <!-- Image Preview -->
-                        <div id="imagePreviewContainer" class="image-preview-container" style="display: none;">
+                        <div id="imagePreviewContainer" style="position: relative; display: none;">
                             <div class="image-preview">
                                 <img id="selectedImagePreview" src="" alt="Selected image">
-                                <div class="image-preview-remove" onclick="removeSelectedImage()">
-                                    <i class="fas fa-times"></i>
-                                </div>
                             </div>
+                            <button type="button" class="remove-image-btn" onclick="removeSelectedImage()">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
                     </div>
                     
-                    <button class="btn btn-primary btn-block" id="saveProductBtn" onclick="addNewProduct()">
-                        <i class="fas fa-save"></i> သိမ်းရန်
+                    <button class="btn btn-primary" id="saveProductBtn" onclick="addNewProduct()" style="width: 100%;">
+                        <i class="fas fa-save"></i> Save Product
                     </button>
                 </div>
 
                 <!-- Products List -->
-                <div class="admin-products">
-                    <h2 style="margin-bottom: 1.5rem;"><i class="fas fa-box"></i> ပစ္စည်းများ</h2>
+                <div class="admin-products-list" style="margin-top: 24px;">
+                    <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+                        <h3 style="font-size: 16px; font-weight: 600; color: var(--dark);">
+                            <i class="fas fa-box"></i> Products List
+                        </h3>
+                    </div>
                     <div id="adminProductsContainer">
                         <div class="loading">
-                            <div class="loading-spinner"></div>
-                            <p>ပစ္စည်းများ လာရှိနေသည်...</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Orders List -->
-                <div class="admin-products" style="margin-top: 2rem;">
-                    <h2 style="margin-bottom: 1.5rem;"><i class="fas fa-receipt"></i> အော်ဒါများ</h2>
-                    <div id="adminOrdersContainer">
-                        <div class="loading">
-                            <div class="loading-spinner"></div>
-                            <p>အော်ဒါများ လာရှိနေသည်...</p>
+                            <div class="spinner"></div>
+                            <p>Loading products...</p>
                         </div>
                     </div>
                 </div>
@@ -245,22 +1155,26 @@
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <p>© 2024 Myanmar Online Shop. All rights reserved.</p>
-        <p style="margin-top: 1rem; font-size: 0.875rem; color: #d1d5db;">
-            <i class="fas fa-phone"></i> 09 940790449 | 
-            <i class="fas fa-envelope"></i> info@myanmarshop.com
-        </p>
-    </footer>
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Payment</h3>
+                <button class="btn-icon btn-danger" onclick="closePaymentModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="paymentModalContent">
+                <!-- Payment content will be loaded here -->
+            </div>
+        </div>
+    </div>
 
     <!-- JavaScript -->
     <script>
         // ===== SUPABASE CONFIGURATION =====
-        // REPLACE THESE WITH YOUR ACTUAL SUPABASE CREDENTIALS
         const SUPABASE_URL = 'https://uwcfumkwljuuizvtfqmn.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_u8z35hVpUr-iAC2zJDu49g_lZATgEaR';
-        
         
         let supabase;
         let products = [];
@@ -273,22 +1187,18 @@
         // ===== SUPABASE INITIALIZATION =====
         async function initializeSupabase() {
             try {
-                // Create Supabase client
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 
-                // Test connection
                 const { data, error } = await supabase.from('products').select('id').limit(1);
                 
                 if (error) {
-                    console.error('Supabase connection error:', error);
                     updateConnectionStatus(false, error.message);
                     return false;
                 }
                 
-                updateConnectionStatus(true, 'Connected to Supabase');
+                updateConnectionStatus(true, 'Connected');
                 return true;
             } catch (error) {
-                console.error('Failed to initialize Supabase:', error);
                 updateConnectionStatus(false, error.message);
                 return false;
             }
@@ -297,30 +1207,21 @@
         function updateConnectionStatus(connected, message = '') {
             const statusElement = document.getElementById('connectionStatus');
             if (connected) {
-                statusElement.innerHTML = `<span class="status-dot"></span><span>${message || 'Supabase Connected'}</span>`;
+                statusElement.innerHTML = '<span class="status-dot"></span><span>Online</span>';
                 statusElement.className = 'connection-status';
             } else {
-                statusElement.innerHTML = `<span class="status-dot"></span><span>${message || 'Supabase Offline'}</span>`;
+                statusElement.innerHTML = `<span class="status-dot"></span><span>${message || 'Offline'}</span>`;
                 statusElement.className = 'connection-status offline';
             }
         }
 
-        // ===== IMAGE UPLOAD FUNCTIONS =====
+        // ===== IMAGE UPLOAD =====
         async function uploadImageToSupabase(file) {
             try {
-                if (!supabase) {
-                    showNotification('Supabase ချိတ်ဆက်မှု မရှိသေးပါ');
-                    return null;
-                }
-                
-                // Create unique filename
                 const fileExt = file.name.split('.').pop();
                 const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
                 const filePath = `product-images/${fileName}`;
                 
-                console.log('Uploading image:', fileName);
-                
-                // Upload file to Supabase Storage
                 const { data, error } = await supabase.storage
                     .from('product-images')
                     .upload(filePath, file, {
@@ -328,73 +1229,36 @@
                         upsert: false
                     });
                 
-                if (error) {
-                    console.error('Upload error:', error);
-                    throw error;
-                }
+                if (error) throw error;
                 
-                console.log('Upload successful:', data);
-                
-                // Get public URL
                 const { data: { publicUrl } } = supabase.storage
                     .from('product-images')
                     .getPublicUrl(filePath);
                 
-                console.log('Public URL:', publicUrl);
                 return publicUrl;
             } catch (error) {
                 console.error('Image upload error:', error);
-                showNotification(`ပုံတင်ရာတွင် ပြဿနာရှိပါသည်: ${error.message}`);
+                showNotification('Failed to upload image');
                 return null;
-            }
-        }
-
-        function handleDragOver(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            document.getElementById('fileUploadContainer').classList.add('dragover');
-        }
-
-        function handleDragLeave(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            document.getElementById('fileUploadContainer').classList.remove('dragover');
-        }
-
-        function handleDrop(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            document.getElementById('fileUploadContainer').classList.remove('dragover');
-            
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                processImageFile(files[0]);
             }
         }
 
         function handleImageSelect(e) {
             const file = e.target.files[0];
-            if (file) {
-                processImageFile(file);
-            }
-        }
-
-        function processImageFile(file) {
-            // Check file size (max 5MB for Supabase)
+            if (!file) return;
+            
             if (file.size > 5 * 1024 * 1024) {
-                showNotification('ပုံဖိုင်အရွယ်အစား 5MB ထက်မကြီးရပါ');
+                showNotification('Image size should be less than 5MB');
                 return;
             }
             
-            // Check file type
             if (!file.type.match('image.*')) {
-                showNotification('ပုံဖိုင်သာ ရွေးချယ်ပါ');
+                showNotification('Please select an image file');
                 return;
             }
             
             selectedImageFile = file;
             
-            // Create preview
             const reader = new FileReader();
             reader.onload = function(e) {
                 const previewContainer = document.getElementById('imagePreviewContainer');
@@ -402,8 +1266,6 @@
                 
                 previewImg.src = e.target.result;
                 previewContainer.style.display = 'block';
-                
-                showNotification('ပုံရွေးချယ်ပြီးပါပြီ');
             };
             reader.readAsDataURL(file);
         }
@@ -414,42 +1276,40 @@
             document.getElementById('imageInput').value = '';
         }
 
-        // ===== SUPABASE DATABASE OPERATIONS =====
+        // ===== DATABASE OPERATIONS =====
         async function loadProductsFromSupabase() {
             try {
-                console.log('Loading products from Supabase...');
                 const { data, error } = await supabase
                     .from('products')
                     .select('*')
                     .order('created_at', { ascending: false });
                 
-                if (error) {
-                    console.error('Error loading products:', error);
-                    throw error;
-                }
+                if (error) throw error;
                 
-                console.log('Products loaded:', data);
                 products = data || [];
                 renderProducts(products);
                 return true;
             } catch (error) {
                 console.error('Error loading products:', error);
-                showNotification(`ပစ္စည်းများ လာရှိရာတွင် ပြဿနာရှိပါသည်: ${error.message}`);
+                showNotification('Failed to load products');
                 return false;
             }
         }
 
         async function addProductToSupabase(productData) {
             try {
-                console.log('Adding product to Supabase:', productData);
-                
-                // Validate required fields
                 if (!productData.name || !productData.price || !productData.category) {
-                    throw new Error('Required fields are missing');
+                    throw new Error('Please fill all required fields');
                 }
                 
-                // Ensure price is integer
                 productData.price = parseInt(productData.price);
+                
+                let imageUrl = null;
+                if (selectedImageFile) {
+                    showNotification('Uploading image...');
+                    imageUrl = await uploadImageToSupabase(selectedImageFile);
+                    if (!imageUrl) return null;
+                }
                 
                 const { data, error } = await supabase
                     .from('products')
@@ -457,44 +1317,34 @@
                         name: productData.name,
                         price: productData.price,
                         category: productData.category,
-                        image_url: productData.image_url || null,
+                        image_url: imageUrl,
                         created_at: new Date().toISOString()
                     }])
                     .select()
                     .single();
                 
-                if (error) {
-                    console.error('Error adding product:', error);
-                    throw error;
-                }
+                if (error) throw error;
                 
-                console.log('Product added successfully:', data);
-                
-                // Add to local array
                 products.unshift(data);
+                showNotification('Product added successfully');
                 return data;
             } catch (error) {
                 console.error('Error adding product:', error);
-                showNotification(`ပစ္စည်းထည့်ရာတွင် ပြဿနာရှိပါသည်: ${error.message}`);
+                showNotification(`Failed to add product: ${error.message}`);
                 return null;
             }
         }
 
         async function deleteProductFromSupabase(productId) {
             try {
-                console.log('Deleting product:', productId);
-                
-                // First, get product to check for image
+                // Get product first to check for image
                 const { data: product, error: fetchError } = await supabase
                     .from('products')
                     .select('image_url')
                     .eq('id', productId)
                     .single();
                 
-                if (fetchError) {
-                    console.error('Error fetching product:', fetchError);
-                    throw fetchError;
-                }
+                if (fetchError) throw fetchError;
                 
                 // Delete from database
                 const { error } = await supabase
@@ -502,37 +1352,33 @@
                     .delete()
                     .eq('id', productId);
                 
-                if (error) {
-                    console.error('Error deleting product:', error);
-                    throw error;
-                }
+                if (error) throw error;
                 
                 // Delete image from storage if exists
                 if (product.image_url) {
                     try {
                         const fileName = product.image_url.split('/').pop();
-                        console.log('Deleting image:', fileName);
-                        
                         await supabase.storage
                             .from('product-images')
                             .remove([`product-images/${fileName}`]);
                     } catch (storageError) {
-                        console.warn('Failed to delete image from storage:', storageError);
+                        console.warn('Failed to delete image:', storageError);
                     }
                 }
                 
                 // Remove from local array
                 products = products.filter(p => p.id !== productId);
                 
-                // Remove from cart if exists
+                // Remove from cart
                 cart = cart.filter(item => item.id !== productId);
                 localStorage.setItem('cart', JSON.stringify(cart));
                 updateCartCount();
                 
+                showNotification('Product deleted successfully');
                 return true;
             } catch (error) {
                 console.error('Error deleting product:', error);
-                showNotification(`ပစ္စည်းဖျက်ရာတွင် ပြဿနာရှိပါသည်: ${error.message}`);
+                showNotification('Failed to delete product');
                 return false;
             }
         }
@@ -540,12 +1386,11 @@
         // ===== PAGE MANAGEMENT =====
         function showPage(page) {
             // Hide all pages
-            document.getElementById('homePage').style.display = 'none';
-            document.getElementById('cartPage').style.display = 'none';
-            document.getElementById('messagesPage').style.display = 'none';
-            document.getElementById('adminPage').style.display = 'none';
+            document.querySelectorAll('.page').forEach(p => {
+                p.style.display = 'none';
+            });
             
-            // Remove active class from all nav links
+            // Update nav links
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.classList.remove('active');
             });
@@ -553,8 +1398,8 @@
             // Show selected page
             document.getElementById(page + 'Page').style.display = 'block';
             
-            // Add active class to clicked nav link
-            const navLink = document.querySelector(`.nav-link[onclick="showPage('${page}')"]`);
+            // Update nav link
+            const navLink = document.querySelector(`.nav-link[onclick*="'${page}'"]`);
             if (navLink) navLink.classList.add('active');
             
             // Update current page
@@ -568,9 +1413,6 @@
                 case 'cart':
                     renderCartPage();
                     renderCartSummary();
-                    break;
-                case 'messages':
-                    loadMessages();
                     break;
                 case 'admin':
                     if (!isAdminLoggedIn) {
@@ -586,7 +1428,7 @@
         function filterCategory(category) {
             currentCategory = category;
             
-            // Update active category button
+            // Update category buttons
             document.querySelectorAll('.category-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
@@ -603,23 +1445,29 @@
         // ===== PRODUCT FUNCTIONS =====
         function getCategoryName(category) {
             const categories = {
-                'electronics': 'လျှပ်စစ်ပစ္စည်း',
-                'fashion': 'အဝတ်အထည်',
-                'beauty': 'အလှအပပစ္စည်း',
-                'home': 'အိမ်သုံးပစ္စည်း'
+                'electronics': 'Electronics',
+                'fashion': 'Fashion',
+                'beauty': 'Beauty',
+                'home': 'Home'
             };
             return categories[category] || category;
         }
 
         function formatPrice(price) {
-            return price.toLocaleString() + ' ကျပ်';
+            return price.toLocaleString() + ' MMK';
         }
 
         function renderProducts(productsList) {
             const container = document.getElementById('productsContainer');
             
             if (!productsList || productsList.length === 0) {
-                container.innerHTML = '<p style="color: var(--gray); text-align: center; padding: 40px; grid-column: 1/-1;">ပစ္စည်းမရှိသေးပါ</p>';
+                container.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+                        <i class="fas fa-box-open" style="font-size: 48px; color: var(--light-gray); margin-bottom: 16px;"></i>
+                        <h3 style="color: var(--dark); margin-bottom: 8px;">No products found</h3>
+                        <p style="color: var(--gray); font-size: 14px;">Try selecting a different category</p>
+                    </div>
+                `;
                 return;
             }
             
@@ -628,24 +1476,26 @@
             productsList.forEach(product => {
                 const card = document.createElement('div');
                 card.className = 'product-card';
-                
                 card.innerHTML = `
-                    <div class="product-img">
+                    <div class="product-image-container">
                         ${product.image_url ? 
-                            `<img src="${product.image_url}" alt="${product.name}" onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\'display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;\'><i class=\'fas fa-image\' style=\'font-size: 3rem; margin-bottom: 10px; color: #9ca3af;\'></i><span style=\'color: #9ca3af;\'>ပုံမရှိပါ</span></div>';">` : 
-                            '<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;"><i class="fas fa-image" style="font-size: 3rem; margin-bottom: 10px; color: #9ca3af;"></i><span style="color: #9ca3af;">ပုံမရှိပါ</span></div>'
+                            `<img src="${product.image_url}" alt="${product.name}" class="product-image">` : 
+                            `<div class="no-image">
+                                <i class="fas fa-image"></i>
+                                <span>No Image</span>
+                            </div>`
                         }
                     </div>
-                    <div class="product-info">
-                        <div class="product-name">${product.name}</div>
-                        <div class="product-category">${getCategoryName(product.category)}</div>
+                    <div class="product-content">
+                        <h3 class="product-name">${product.name}</h3>
+                        <span class="product-category">${getCategoryName(product.category)}</span>
                         <div class="product-price">${formatPrice(product.price)}</div>
-                        <div class="product-actions" style="display: flex; gap: 10px; margin-top: 15px;">
-                            <button class="btn btn-primary" onclick="addToCart(${product.id})" style="flex: 1;">
-                                <i class="fas fa-cart-plus"></i> ဝယ်မယ်
+                        <div class="product-actions">
+                            <button class="btn btn-primary" onclick="addToCart(${product.id})">
+                                <i class="fas fa-cart-plus"></i> Add to Cart
                             </button>
-                            <button class="btn btn-success" onclick="quickCheckout(${product.id})" style="flex: 1;">
-                                <i class="fas fa-bolt"></i> အမြန်ချေမည်
+                            <button class="btn btn-success" onclick="quickCheckout(${product.id})">
+                                <i class="fas fa-bolt"></i> Quick Buy
                             </button>
                         </div>
                     </div>
@@ -675,7 +1525,7 @@
             localStorage.setItem('cart', JSON.stringify(cart));
             updateCartCount();
             
-            showNotification(`${product.name} ဈေးခြင်းထဲ ထည့်ပြီးပါပြီ!`);
+            showNotification(`${product.name} added to cart`);
         }
 
         function removeFromCart(productId) {
@@ -703,66 +1553,81 @@
 
         function renderCartPage() {
             const container = document.getElementById('cartContainer');
-            container.innerHTML = '';
+            const summary = document.getElementById('cartSummary');
             
             if (cart.length === 0) {
-                container.innerHTML = '<p style="color: var(--gray); text-align: center; padding: 40px;">သင့်ဈေးခြင်းထဲ ဘာမှမရှိပါ</p>';
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-shopping-cart"></i>
+                        <h3>Your cart is empty</h3>
+                        <p>Add some products to get started</p>
+                        <button class="btn btn-primary" onclick="showPage('home')">
+                            <i class="fas fa-shopping-bag"></i> Browse Products
+                        </button>
+                    </div>
+                `;
+                summary.style.display = 'none';
                 return;
             }
+            
+            container.innerHTML = '<div class="cart-items"></div>';
+            const itemsContainer = container.querySelector('.cart-items');
             
             cart.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'cart-item';
                 div.innerHTML = `
-                    <div class="cart-item-img">
+                    <div class="cart-item-image">
                         ${item.image_url ? 
                             `<img src="${item.image_url}" alt="${item.name}">` : 
-                            '<div style="display: flex; align-items: center; justify-content: center; height: 100%;"><i class="fas fa-image"></i></div>'
+                            `<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--light-gray);">
+                                <i class="fas fa-image"></i>
+                            </div>`
                         }
                     </div>
-                    <div class="cart-item-info">
-                        <div class="cart-item-name" style="font-weight: 600; font-size: 1.1rem;">${item.name}</div>
-                        <div class="cart-item-price" style="color: var(--primary); margin-top: 5px;">${formatPrice(item.price)} တစ်ခုစီ</div>
+                    <div class="cart-item-details">
+                        <h4 class="cart-item-name">${item.name}</h4>
+                        <div class="cart-item-price">${formatPrice(item.price)} each</div>
                     </div>
                     <div class="cart-item-actions">
-                        <button class="quantity-btn" onclick="updateQuantity(${item.id}, -1)">-</button>
-                        <span class="quantity">${item.quantity}</span>
-                        <button class="quantity-btn" onclick="updateQuantity(${item.id}, 1)">+</button>
+                        <div class="quantity-controls">
+                            <button class="quantity-btn" onclick="updateQuantity(${item.id}, -1)">-</button>
+                            <span class="quantity">${item.quantity}</span>
+                            <button class="quantity-btn" onclick="updateQuantity(${item.id}, 1)">+</button>
+                        </div>
+                        <button class="btn-icon btn-danger" onclick="removeFromCart(${item.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
-                    <div class="cart-item-total" style="font-weight: 600; font-size: 1.1rem; color: var(--primary);">
-                        ${formatPrice(item.price * item.quantity)}
-                    </div>
-                    <button class="btn btn-danger" onclick="removeFromCart(${item.id})">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                    <div class="cart-item-total">${formatPrice(item.price * item.quantity)}</div>
                 `;
-                container.appendChild(div);
+                itemsContainer.appendChild(div);
             });
+            
+            summary.style.display = 'block';
         }
 
         function renderCartSummary() {
             const container = document.getElementById('cartSummary');
             const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const shipping = 3000;
+            const total = subtotal + shipping;
             
             container.innerHTML = `
                 <div class="summary-item">
-                    <span>စုစုပေါင်း ပစ္စည်းများ:</span>
-                    <span>${cart.reduce((sum, item) => sum + item.quantity, 0)} ခု</span>
-                </div>
-                <div class="summary-item">
-                    <span>ကြားခံစုစုပေါင်း:</span>
+                    <span>Subtotal</span>
                     <span>${formatPrice(subtotal)}</span>
                 </div>
                 <div class="summary-item">
-                    <span>ပို့ဆောင်ခ:</span>
-                    <span>${formatPrice(3000)}</span>
+                    <span>Shipping</span>
+                    <span>${formatPrice(shipping)}</span>
                 </div>
-                <div class="summary-item summary-total">
-                    <span>စုစုပေါင်း:</span>
-                    <span>${formatPrice(subtotal + 3000)}</span>
+                <div class="summary-item">
+                    <span>Total</span>
+                    <span>${formatPrice(total)}</span>
                 </div>
-                <button class="btn btn-primary btn-block" onclick="checkout()" style="margin-top: 20px; padding: 15px;">
-                    <i class="fas fa-shopping-bag"></i> အော်ဒါတင်မည်
+                <button class="btn btn-primary" onclick="checkout()" style="width: 100%; margin-top: 20px;">
+                    <i class="fas fa-shopping-bag"></i> Checkout
                 </button>
             `;
         }
@@ -770,6 +1635,99 @@
         function updateCartCount() {
             const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
             document.getElementById('cartCount').textContent = totalItems;
+        }
+
+        // ===== CHECKOUT =====
+        function checkout() {
+            if (cart.length === 0) {
+                showNotification('Your cart is empty');
+                return;
+            }
+            
+            const name = prompt('Enter your name:');
+            if (!name) return;
+            
+            const phone = prompt('Enter your phone number:');
+            if (!phone) return;
+            
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + 3000;
+            
+            showPaymentModal({
+                id: Date.now(),
+                items: cart,
+                total: total,
+                customer: name,
+                phone: phone
+            });
+        }
+
+        function quickCheckout(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            showPaymentModal({
+                id: Date.now(),
+                items: [{
+                    name: product.name,
+                    quantity: 1,
+                    price: product.price
+                }],
+                total: product.price + 3000
+            });
+        }
+
+        function showPaymentModal(order) {
+            const modal = document.getElementById('paymentModal');
+            const content = document.getElementById('paymentModalContent');
+            
+            content.innerHTML = `
+                <div style="text-align: center;">
+                    <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                        <h4 style="color: var(--primary); margin-bottom: 8px;">Order #ORD-${order.id}</h4>
+                        <p style="color: var(--dark); font-size: 24px; font-weight: 700;">${formatPrice(order.total)}</p>
+                    </div>
+                    
+                    <div style="background: #f8fafc; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+                        <h5 style="margin-bottom: 12px; color: var(--dark);">
+                            <i class="fas fa-mobile-alt"></i> KPay
+                        </h5>
+                        <p style="font-size: 20px; font-weight: 700; color: var(--primary); margin-bottom: 12px;">
+                            09 940790449
+                        </p>
+                        <button class="btn btn-primary" onclick="copyToClipboard('09940790449')" style="width: 100%;">
+                            <i class="fas fa-copy"></i> Copy Number
+                        </button>
+                    </div>
+                    
+                    <div style="background: #f8fafc; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+                        <h5 style="margin-bottom: 12px; color: var(--dark);">
+                            <i class="fas fa-wave-square"></i> WavePay
+                        </h5>
+                        <p style="font-size: 20px; font-weight: 700; color: var(--primary); margin-bottom: 12px;">
+                            09 954204473
+                        </p>
+                        <button class="btn btn-primary" onclick="copyToClipboard('09954204473')" style="width: 100%;">
+                            <i class="fas fa-copy"></i> Copy Number
+                        </button>
+                    </div>
+                    
+                    <p style="color: var(--gray); font-size: 13px; line-height: 1.5;">
+                        <i class="fas fa-info-circle"></i> After payment, please send screenshot to messages. We will confirm and deliver your order.
+                    </p>
+                </div>
+            `;
+            
+            modal.classList.add('active');
+        }
+
+        function closePaymentModal() {
+            document.getElementById('paymentModal').classList.remove('active');
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification('Copied to clipboard!');
+            });
         }
 
         // ===== ADMIN FUNCTIONS =====
@@ -781,47 +1739,54 @@
                 document.getElementById('adminLogin').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
                 loadAdminData();
+                showNotification('Admin login successful');
             } else {
-                showNotification('လျှို့ဝှက်နံပါတ် မှားနေပါတယ်');
+                showNotification('Incorrect password');
             }
         }
 
         async function loadAdminData() {
-            // Load products
             await loadProductsFromSupabase();
             renderAdminProducts();
         }
 
         async function renderAdminProducts() {
             const container = document.getElementById('adminProductsContainer');
-            container.innerHTML = '';
             
             if (products.length === 0) {
-                container.innerHTML = '<p style="color: var(--gray); text-align: center; padding: 20px;">ပစ္စည်းမရှိသေးပါ</p>';
+                container.innerHTML = `
+                    <div style="padding: 40px 20px; text-align: center; color: var(--gray);">
+                        <i class="fas fa-box-open" style="font-size: 32px; margin-bottom: 12px;"></i>
+                        <p>No products yet</p>
+                    </div>
+                `;
                 return;
             }
+            
+            container.innerHTML = '';
             
             products.forEach(product => {
                 const item = document.createElement('div');
                 item.className = 'admin-product-item';
                 item.innerHTML = `
-                    <div class="admin-product-img">
+                    <div class="admin-product-image">
                         ${product.image_url ? 
                             `<img src="${product.image_url}" alt="${product.name}">` : 
-                            '<div style="display: flex; align-items: center; justify-content: center; height: 100%;"><i class="fas fa-image"></i></div>'
+                            `<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--light-gray);">
+                                <i class="fas fa-image"></i>
+                            </div>`
                         }
                     </div>
-                    <div class="admin-product-info" style="flex: 1;">
-                        <div class="admin-product-name" style="font-weight: 600;">${product.name}</div>
-                        <div class="admin-product-price">${formatPrice(product.price)}</div>
-                        <div class="admin-product-category">${getCategoryName(product.category)}</div>
-                        <div style="font-size: 0.8rem; color: var(--gray); margin-top: 5px;">
-                            ${new Date(product.created_at).toLocaleDateString()}
+                    <div class="admin-product-info">
+                        <h4 class="admin-product-name">${product.name}</h4>
+                        <div class="admin-product-meta">
+                            <span class="admin-product-price">${formatPrice(product.price)}</span>
+                            <span class="admin-product-category">${getCategoryName(product.category)}</span>
                         </div>
                     </div>
-                    <div class="admin-product-actions" style="display: flex; gap: 10px;">
-                        <button class="btn btn-danger btn-sm" onclick="deleteProduct(${product.id})">
-                            <i class="fas fa-trash"></i>
+                    <div class="admin-product-actions">
+                        <button class="btn-sm btn-danger" onclick="deleteProduct(${product.id})">
+                            <i class="fas fa-trash"></i> Delete
                         </button>
                     </div>
                 `;
@@ -834,53 +1799,21 @@
             const price = parseInt(document.getElementById('pPrice').value) || 0;
             const category = document.getElementById('pCategory').value;
             
-            // Validation
-            if (!name) {
-                showNotification('ကျေးဇူးပြု၍ ပစ္စည်းအမည်ထည့်ပါ');
-                document.getElementById('pName').focus();
+            if (!name || price <= 0 || !category) {
+                showNotification('Please fill all required fields');
                 return;
             }
             
-            if (price <= 0) {
-                showNotification('ကျေးဇူးပြု၍ မှန်ကန်သောဈေးနှုန်းထည့်ပါ');
-                document.getElementById('pPrice').focus();
-                return;
-            }
-            
-            if (!category) {
-                showNotification('ကျေးဇူးပြု၍ အမျိုးအစားရွေးချယ်ပါ');
-                document.getElementById('pCategory').focus();
-                return;
-            }
-            
-            let imageUrl = null;
-            
-            // Upload image if selected
-            if (selectedImageFile) {
-                showNotification('ပုံတင်နေသည်...');
-                const saveBtn = document.getElementById('saveProductBtn');
-                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> တင်နေသည်...';
-                saveBtn.disabled = true;
-                
-                imageUrl = await uploadImageToSupabase(selectedImageFile);
-                
-                saveBtn.innerHTML = '<i class="fas fa-save"></i> သိမ်းရန်';
-                saveBtn.disabled = false;
-                
-                if (!imageUrl) {
-                    showNotification('ပုံတင်မအောင်မြင်ပါ');
-                    return;
-                }
-            }
+            const saveBtn = document.getElementById('saveProductBtn');
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            saveBtn.disabled = true;
             
             const productData = {
                 name: name,
                 price: price,
-                category: category,
-                image_url: imageUrl
+                category: category
             };
             
-            // Save to Supabase
             const result = await addProductToSupabase(productData);
             
             if (result) {
@@ -894,19 +1827,19 @@
                 // Update UI
                 renderAdminProducts();
                 filterCategory(currentCategory);
-                
-                showNotification('ပစ္စည်းအသစ် ထည့်သွင်းပြီးပါပြီ');
             }
+            
+            saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Product';
+            saveBtn.disabled = false;
         }
 
         async function deleteProduct(productId) {
-            if (!confirm('ဒီပစ္စည်းကို ဖျက်မှာလား?')) return;
+            if (!confirm('Are you sure you want to delete this product?')) return;
             
             const success = await deleteProductFromSupabase(productId);
             if (success) {
                 renderAdminProducts();
                 filterCategory(currentCategory);
-                showNotification('ပစ္စည်း ဖျက်ပြီးပါပြီ');
             }
         }
 
@@ -918,34 +1851,55 @@
             document.body.appendChild(notification);
             
             setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease';
+                notification.style.animation = 'notificationSlideOut 0.3s ease';
                 setTimeout(() => notification.remove(), 300);
             }, 3000);
         }
 
         // ===== INITIALIZATION =====
         async function init() {
-            // Initialize Supabase
             const connected = await initializeSupabase();
             
             if (connected) {
-                // Load products from Supabase
                 await loadProductsFromSupabase();
-                
-                // Show home page
                 showPage('home');
                 updateCartCount();
             } else {
-                showNotification('Supabase ချိတ်ဆက်မှု ပြဿနာရှိပါသည်။ ကျေးဇူးပြု၍ credentials များ စစ်ဆေးပါ။');
-                
-                // Still show page for demo
+                showNotification('Failed to connect to database');
                 showPage('home');
                 updateCartCount();
             }
         }
 
-        // Initialize on page load
+        // Initialize
         window.onload = init;
+        
+        // Add drag and drop support
+        const fileUploadContainer = document.getElementById('fileUploadContainer');
+        if (fileUploadContainer) {
+            fileUploadContainer.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                fileUploadContainer.style.borderColor = 'var(--primary)';
+                fileUploadContainer.style.background = '#f0f9ff';
+            });
+            
+            fileUploadContainer.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                fileUploadContainer.style.borderColor = '';
+                fileUploadContainer.style.background = '';
+            });
+            
+            fileUploadContainer.addEventListener('drop', (e) => {
+                e.preventDefault();
+                fileUploadContainer.style.borderColor = '';
+                fileUploadContainer.style.background = '';
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleImageSelect({ target: { files: [files[0]] } });
+                }
+            });
+        }
     </script>
 </body>
 </html>
