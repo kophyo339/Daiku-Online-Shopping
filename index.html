@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daiku - Real Online Shop (Multi-Device)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         /* ===== RESET & BASE ===== */
         :root {
@@ -827,7 +826,7 @@
                     </div>
                     
                     <div class="messages-list" id="chatMessagesList">
-                        <!-- Messages will be loaded from Firebase -->
+                        <!-- Messages will be loaded from Supabase -->
                     </div>
                     
                     <div class="message-input-area">
@@ -943,7 +942,7 @@
             <div class="sidebar-card">
                 <h3><i class="fas fa-comment-dots"></i> စကားပြောရန်</h3>
                 <div class="chat-box" id="quickChatMessages">
-                    <!-- Quick chat messages will be loaded from Firebase -->
+                    <!-- Quick chat messages will be loaded from Supabase -->
                 </div>
                 <input type="text" id="quickChatInput" class="search-box" placeholder="စာရိုက်ပါ..." onkeypress="handleQuickChatKeyPress(event)">
                 <div style="display: flex; gap: 8px; margin-top: 8px;">
@@ -957,7 +956,7 @@
     <!-- FOOTER -->
     <footer class="footer">
         <p>© 2023 Daiku Real Shop. All rights reserved.</p>
-        <p style="margin-top: 5px; font-size: 0.85rem; color: #cbd5e1;">Multi-Device Online Shopping</p>
+        <p style="margin-top: 5px; font-size: 0.85rem; color: #cbd5e1;">Multi-Device Online Shopping (Supabase)</p>
     </footer>
 
     <!-- ORDER DETAILS MODAL -->
@@ -975,76 +974,226 @@
 
     <!-- JAVASCRIPT -->
     <script>
-        // ===== FIREBASE CONFIGURATION =====
-        // 🔴 IMPORTANT: Replace with your own Firebase config
-        const firebaseConfig = {
-            apiKey: "AIzaSyDx6v6eF6Q7V8Q1Xq5Z8W9R0T1U2V3W4X5Y6Z",
-            authDomain: "daiku-shop.firebaseapp.com",
-            databaseURL: "https://daiku-shop-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "daiku-shop",
-            storageBucket: "daiku-shop.appspot.com",
-            messagingSenderId: "123456789012",
-            appId: "1:123456789012:web:abcdef1234567890abcdef"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        // ===== SUPABASE CONFIGURATION =====
+        // 🔴 IMPORTANT: Replace with your own Supabase config
+        const SUPABASE_URL = 'https://uwcfumkwljuuizvtfqmn.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_u8z35hVpUr-iAC2zJDu49g_lZATgEaR';
+        
+        // Initialize Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         // ===== APP STATE =====
         const ADMIN_PASSWORD = '1234';
         let products = [];
-        let cart = JSON.parse(localStorage.getItem('daiku_cart')) || []; // Cart stays local
+        let cart = JSON.parse(localStorage.getItem('daiku_cart')) || [];
         let orders = [];
         let messages = [];
         let currentCategory = 'all';
         let currentPage = 'home';
-        
-        // Firebase references
-        const productsRef = database.ref('products');
-        const ordersRef = database.ref('orders');
-        const messagesRef = database.ref('messages');
-        
-        // ===== FIREBASE LISTENERS =====
-        // Listen for products changes
-        productsRef.on('value', (snapshot) => {
-            const data = snapshot.val();
-            products = data ? Object.values(data) : [];
-            renderProducts();
-            renderAdminProductList();
-            updateStats();
-        });
-        
-        // Listen for orders changes
-        ordersRef.on('value', (snapshot) => {
-            const data = snapshot.val();
-            orders = data ? Object.values(data) : [];
-            renderOrders();
-            updateStats();
-        });
-        
-        // Listen for messages changes
-        messagesRef.on('value', (snapshot) => {
-            const data = snapshot.val();
-            messages = data ? Object.values(data) : [];
-            renderMessages();
-            renderQuickChat();
-            updateMessageCount();
-        });
-        
-        // Connection status
-        database.ref('.info/connected').on('value', (snapshot) => {
-            const isConnected = snapshot.val();
-            const statusElement = document.getElementById('connectionStatus');
-            
-            if (isConnected) {
-                statusElement.className = 'connection-status status-online';
-                statusElement.innerHTML = '<span class="status-dot dot-online"></span><span>Online</span>';
-            } else {
-                statusElement.className = 'connection-status status-offline';
-                statusElement.innerHTML = '<span class="status-dot dot-offline"></span><span>Offline</span>';
+        let isConnected = true;
+
+        // ===== SUPABASE OPERATIONS =====
+        async function loadProducts() {
+            try {
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                products = data || [];
+                renderProducts();
+                renderAdminProductList();
+                updateStats();
+                updateConnectionStatus(true);
+            } catch (error) {
+                console.error('Error loading products:', error);
+                updateConnectionStatus(false);
             }
-        });
+        }
+        
+        async function loadOrders() {
+            try {
+                const { data, error } = await supabase
+                    .from('orders')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                orders = data || [];
+                renderOrders();
+                updateStats();
+                updateConnectionStatus(true);
+            } catch (error) {
+                console.error('Error loading orders:', error);
+                updateConnectionStatus(false);
+            }
+        }
+        
+        async function loadMessages() {
+            try {
+                const { data, error } = await supabase
+                    .from('messages')
+                    .select('*')
+                    .order('created_at', { ascending: true });
+                
+                if (error) throw error;
+                messages = data || [];
+                renderMessages();
+                renderQuickChat();
+                updateMessageCount();
+                updateConnectionStatus(true);
+            } catch (error) {
+                console.error('Error loading messages:', error);
+                updateConnectionStatus(false);
+            }
+        }
+        
+        async function addProduct(product) {
+            try {
+                const { data, error } = await supabase
+                    .from('products')
+                    .insert([product])
+                    .select();
+                
+                if (error) throw error;
+                updateConnectionStatus(true);
+                return data[0];
+            } catch (error) {
+                console.error('Error adding product:', error);
+                updateConnectionStatus(false);
+                return null;
+            }
+        }
+        
+        async function deleteProduct(productId) {
+            try {
+                const { error } = await supabase
+                    .from('products')
+                    .delete()
+                    .eq('id', productId);
+                
+                if (error) throw error;
+                updateConnectionStatus(true);
+                return true;
+            } catch (error) {
+                console.error('Error deleting product:', error);
+                updateConnectionStatus(false);
+                return false;
+            }
+        }
+        
+        async function addOrder(order) {
+            try {
+                const { data, error } = await supabase
+                    .from('orders')
+                    .insert([order])
+                    .select();
+                
+                if (error) throw error;
+                updateConnectionStatus(true);
+                return data[0];
+            } catch (error) {
+                console.error('Error adding order:', error);
+                updateConnectionStatus(false);
+                return null;
+            }
+        }
+        
+        async function updateOrder(orderId, updates) {
+            try {
+                const { error } = await supabase
+                    .from('orders')
+                    .update(updates)
+                    .eq('id', orderId);
+                
+                if (error) throw error;
+                updateConnectionStatus(true);
+                return true;
+            } catch (error) {
+                console.error('Error updating order:', error);
+                updateConnectionStatus(false);
+                return false;
+            }
+        }
+        
+        async function deleteOrderFromDB(orderId) {
+            try {
+                const { error } = await supabase
+                    .from('orders')
+                    .delete()
+                    .eq('id', orderId);
+                
+                if (error) throw error;
+                updateConnectionStatus(true);
+                return true;
+            } catch (error) {
+                console.error('Error deleting order:', error);
+                updateConnectionStatus(false);
+                return false;
+            }
+        }
+        
+        async function addMessage(message) {
+            try {
+                const { data, error } = await supabase
+                    .from('messages')
+                    .insert([message])
+                    .select();
+                
+                if (error) throw error;
+                updateConnectionStatus(true);
+                return data[0];
+            } catch (error) {
+                console.error('Error adding message:', error);
+                updateConnectionStatus(false);
+                return null;
+            }
+        }
+        
+        async function clearMessages() {
+            try {
+                const { error } = await supabase
+                    .from('messages')
+                    .delete()
+                    .neq('id', 0); // Delete all messages
+                
+                if (error) throw error;
+                updateConnectionStatus(true);
+                return true;
+            } catch (error) {
+                console.error('Error clearing messages:', error);
+                updateConnectionStatus(false);
+                return false;
+            }
+        }
+
+        // ===== REAL-TIME SUBSCRIPTIONS =====
+        function setupRealtime() {
+            // Products subscription
+            supabase
+                .channel('products')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
+                    loadProducts();
+                })
+                .subscribe();
+            
+            // Orders subscription
+            supabase
+                .channel('orders')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+                    loadOrders();
+                })
+                .subscribe();
+            
+            // Messages subscription
+            supabase
+                .channel('messages')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => {
+                    loadMessages();
+                })
+                .subscribe();
+        }
 
         // ===== UTILITY FUNCTIONS =====
         function formatPrice(price) { 
@@ -1061,97 +1210,69 @@
             return now.toLocaleDateString('my-MM');
         }
         
-        function generateId() {
-            return Date.now().toString() + Math.random().toString(36).substr(2, 9);
-        }
-        
         function copyNumber(id) {
             const text = document.getElementById(id).innerText;
             navigator.clipboard.writeText(text).then(() => alert('ကူးယူပြီးပါပြီ: ' + text));
         }
-
-        // ===== FIREBASE OPERATIONS =====
-        function addProductToFirebase(product) {
-            const newProductRef = productsRef.push();
-            product.id = newProductRef.key;
-            newProductRef.set(product);
-        }
         
-        function updateProductInFirebase(productId, updates) {
-            productsRef.child(productId).update(updates);
-        }
-        
-        function deleteProductFromFirebase(productId) {
-            productsRef.child(productId).remove();
-        }
-        
-        function addOrderToFirebase(order) {
-            const newOrderRef = ordersRef.push();
-            order.id = newOrderRef.key;
-            order.status = 'pending';
-            order.timestamp = Date.now();
-            newOrderRef.set(order);
-        }
-        
-        function updateOrderInFirebase(orderId, updates) {
-            ordersRef.child(orderId).update(updates);
-        }
-        
-        function deleteOrderFromFirebase(orderId) {
-            ordersRef.child(orderId).remove();
-        }
-        
-        function addMessageToFirebase(message) {
-            const newMessageRef = messagesRef.push();
-            message.id = newMessageRef.key;
-            message.timestamp = Date.now();
-            newMessageRef.set(message);
-        }
-        
-        function clearMessagesFromFirebase() {
-            messagesRef.remove();
+        function updateConnectionStatus(connected) {
+            isConnected = connected;
+            const statusElement = document.getElementById('connectionStatus');
+            
+            if (connected) {
+                statusElement.className = 'connection-status status-online';
+                statusElement.innerHTML = '<span class="status-dot dot-online"></span><span>Online</span>';
+            } else {
+                statusElement.className = 'connection-status status-offline';
+                statusElement.innerHTML = '<span class="status-dot dot-offline"></span><span>Offline</span>';
+            }
         }
 
         // ===== MESSAGE FUNCTIONS =====
-        function sendMessage(messageText, isQuickChat = false) {
+        async function sendMessage(messageText, isQuickChat = false) {
             if (!messageText.trim()) return;
+            
+            if (!isConnected) {
+                alert('Internet connection ပြတ်နေပါတယ်။ ကျေးဇူးပြု၍ ပြန်ကြိုးစားပါ။');
+                return;
+            }
             
             const newMessage = {
                 sender: 'user',
-                text: messageText,
-                time: getCurrentTime(),
-                date: getCurrentDate()
+                text: messageText
             };
             
-            addMessageToFirebase(newMessage);
+            const result = await addMessage(newMessage);
             
-            // Clear input
-            if (isQuickChat) {
-                document.getElementById('quickChatInput').value = '';
+            if (result) {
+                // Clear input
+                if (isQuickChat) {
+                    document.getElementById('quickChatInput').value = '';
+                } else {
+                    document.getElementById('chatInput').value = '';
+                }
+                
+                // Auto-reply from admin after 1 second
+                setTimeout(async () => {
+                    const autoReplies = [
+                        "ကျေးဇူးတင်ပါတယ်! ကျွန်တော် အမြန်ဆုံး ပြန်လည်ဖြေကြားပေးပါမယ်။",
+                        "မက်ဆေ့ချ် လက်ခံရရှိပါပြီ။ ကျေးဇူးပြု၍ စောင့်ဆိုင်းပေးပါ။",
+                        "ကျေးဇူးအများကြီးတင်ပါတယ်! သင့်မေးခွန်းကို ဖြေကြားပေးပါမယ်။",
+                        "မက်ဆေ့ချ်အတွက် ကျေးဇူးတင်ပါတယ်။ ကျွန်တော် ပြန်လည်ဆက်သွယ်ပါမယ်။"
+                    ];
+                    
+                    const randomReply = autoReplies[Math.floor(Math.random() * autoReplies.length)];
+                    
+                    const adminReply = {
+                        sender: 'admin',
+                        text: randomReply
+                    };
+                    
+                    await addMessage(adminReply);
+                }, 1000);
             } else {
-                document.getElementById('chatInput').value = '';
+                alert('မက်ဆေ့ချ်ပို့ရာမှာ ပြဿနာရှိပါတယ်။');
             }
-            
-            // Auto-reply from admin after 1 second
-            setTimeout(() => {
-                const autoReplies = [
-                    "ကျေးဇူးတင်ပါတယ်! ကျွန်တော် အမြန်ဆုံး ပြန်လည်ဖြေကြားပေးပါမယ်။",
-                    "မက်ဆေ့ချ် လက်ခံရရှိပါပြီ။ ကျေးဇူးပြု၍ စောင့်ဆိုင်းပေးပါ။",
-                    "ကျေးဇူးအများကြီးတင်ပါတယ်! သင့်မေးခွန်းကို ဖြေကြားပေးပါမယ်။",
-                    "မက်ဆေ့ချ်အတွက် ကျေးဇူးတင်ပါတယ်။ ကျွန်တော် ပြန်လည်ဆက်သွယ်ပါမယ်။"
-                ];
-                
-                const randomReply = autoReplies[Math.floor(Math.random() * autoReplies.length)];
-                
-                const adminReply = {
-                    sender: 'admin',
-                    text: randomReply,
-                    time: getCurrentTime(),
-                    date: getCurrentDate()
-                };
-                
-                addMessageToFirebase(adminReply);
-            }, 1000);
         }
 
         function renderMessages() {
@@ -1163,18 +1284,18 @@
                 return;
             }
             
-            // Sort messages by timestamp
-            const sortedMessages = [...messages].sort((a, b) => a.timestamp - b.timestamp);
-            
-            sortedMessages.forEach(message => {
+            messages.forEach(message => {
                 const messageDiv = document.createElement('div');
                 messageDiv.className = 'message';
+                const time = new Date(message.created_at).toLocaleTimeString('my-MM', { hour: '2-digit', minute: '2-digit' });
+                const date = new Date(message.created_at).toLocaleDateString('my-MM');
+                
                 messageDiv.innerHTML = `
                     <div class="${message.sender === 'admin' ? 'message-admin' : 'message-user'}">
                         ${message.sender === 'admin' ? 'Admin:' : 'သင်:'}
                     </div>
                     <div class="message-text">${message.text}</div>
-                    <div class="message-time">${message.date} ${message.time}</div>
+                    <div class="message-time">${date} ${time}</div>
                 `;
                 container.appendChild(messageDiv);
             });
@@ -1188,8 +1309,7 @@
             container.innerHTML = '';
             
             // Show only last 3 messages
-            const sortedMessages = [...messages].sort((a, b) => a.timestamp - b.timestamp);
-            const recentMessages = sortedMessages.slice(-3);
+            const recentMessages = messages.slice(-3);
             
             if (recentMessages.length === 0) {
                 container.innerHTML = '<p style="color: var(--gray); text-align: center; padding: 10px; font-size: 0.8rem;">မက်ဆေ့ချ်မရှိသေးပါ</p>';
@@ -1200,12 +1320,14 @@
                 const messageDiv = document.createElement('div');
                 messageDiv.className = 'message';
                 messageDiv.style.fontSize = '0.8rem';
+                const time = new Date(message.created_at).toLocaleTimeString('my-MM', { hour: '2-digit', minute: '2-digit' });
+                
                 messageDiv.innerHTML = `
                     <div class="${message.sender === 'admin' ? 'message-admin' : 'message-user'}" style="font-size: 0.8rem;">
                         ${message.sender === 'admin' ? 'Admin:' : 'သင်:'}
                     </div>
                     <div class="message-text" style="font-size: 0.75rem;">${message.text.length > 50 ? message.text.substring(0, 50) + '...' : message.text}</div>
-                    <div class="message-time" style="font-size: 0.65rem;">${message.time}</div>
+                    <div class="message-time" style="font-size: 0.65rem;">${time}</div>
                 `;
                 container.appendChild(messageDiv);
             });
@@ -1242,20 +1364,19 @@
                 return;
             }
             
-            // Sort orders by timestamp (newest first)
-            const sortedOrders = [...orders].sort((a, b) => b.timestamp - a.timestamp);
-            
             // Show only last 5 orders
-            const recentOrders = sortedOrders.slice(0, 5);
+            const recentOrders = orders.slice(0, 5);
             
             recentOrders.forEach(order => {
                 const orderDiv = document.createElement('div');
                 orderDiv.className = 'order-history-item';
                 orderDiv.onclick = () => showOrderDetails(order.id);
+                const date = new Date(order.created_at).toLocaleDateString('my-MM');
+                
                 orderDiv.innerHTML = `
                     <div class="order-header">
-                        <div class="order-id">${order.id.substring(0, 8)}...</div>
-                        <div class="order-date">${order.date}</div>
+                        <div class="order-id">ORD-${order.id.toString().slice(-4)}</div>
+                        <div class="order-date">${date}</div>
                     </div>
                     <div class="order-customer">${order.customer} (${order.phone})</div>
                     <div class="order-amount">${formatPrice(order.total)}</div>
@@ -1272,15 +1393,17 @@
             if (!order) return;
             
             const modalContent = document.getElementById('orderModalContent');
+            const date = new Date(order.created_at).toLocaleDateString('my-MM');
+            
             modalContent.innerHTML = `
                 <div style="margin-bottom: 15px;">
                     <div class="order-detail-item">
                         <span>အော်ဒါနံပါတ်:</span>
-                        <span style="font-weight: 600;">${order.id}</span>
+                        <span style="font-weight: 600;">ORD-${order.id}</span>
                     </div>
                     <div class="order-detail-item">
                         <span>ရက်စွဲ:</span>
-                        <span>${order.date}</span>
+                        <span>${date}</span>
                     </div>
                     <div class="order-detail-item">
                         <span>ဝယ်ယူသူ:</span>
@@ -1317,10 +1440,10 @@
                 </div>
                 
                 <div style="margin-top: 20px; display: flex; gap: 10px;">
-                    <button class="btn btn-primary" style="flex: 1;" onclick="markOrderAsCompleted('${order.id}')">
+                    <button class="btn btn-primary" style="flex: 1;" onclick="markOrderAsCompleted(${order.id})">
                         <i class="fas fa-check"></i> ပြီးပြီဟု မှတ်သားမည်
                     </button>
-                    <button class="btn btn-danger" style="flex: 1;" onclick="deleteOrder('${order.id}')">
+                    <button class="btn btn-danger" style="flex: 1;" onclick="deleteOrder(${order.id})">
                         <i class="fas fa-trash"></i> အော်ဒါဖျက်မည်
                     </button>
                 </div>
@@ -1333,17 +1456,25 @@
             document.getElementById('orderModal').style.display = 'none';
         }
 
-        function markOrderAsCompleted(orderId) {
-            updateOrderInFirebase(orderId, { status: 'completed' });
-            alert('အော်ဒါကို ပြီးပြီဟု မှတ်သားပြီးပါပြီ');
-            closeOrderModal();
+        async function markOrderAsCompleted(orderId) {
+            const success = await updateOrder(orderId, { status: 'completed' });
+            if (success) {
+                alert('အော်ဒါကို ပြီးပြီဟု မှတ်သားပြီးပါပြီ');
+                closeOrderModal();
+            } else {
+                alert('အော်ဒါအခြေအနေ ပြောင်းရာမှာ ပြဿနာရှိပါတယ်။');
+            }
         }
 
-        function deleteOrder(orderId) {
+        async function deleteOrder(orderId) {
             if (confirm('ဒီအော်ဒါကို ဖျက်မှာလား?')) {
-                deleteOrderFromFirebase(orderId);
-                alert('အော်ဒါ ဖျက်ပြီးပါပြီ');
-                closeOrderModal();
+                const success = await deleteOrderFromDB(orderId);
+                if (success) {
+                    alert('အော်ဒါ ဖျက်ပြီးပါပြီ');
+                    closeOrderModal();
+                } else {
+                    alert('အော်ဒါဖျက်ရာမှာ ပြဿနာရှိပါတယ်။');
+                }
             }
         }
 
@@ -1421,7 +1552,7 @@
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 card.innerHTML = `
-                    <img src="${product.image || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y4ZmFmYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5Y2EzYjgiIHRleHQtYW5jaG9�PSJtaWRkbGUiIGR5PSIuM2VtIj5ပုံမရှိ</dGV4dD48L3N2Zz4='}" 
+                    <img src="${product.image || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y4ZmFmYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5Y2EzYjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ပုံမရှိ</dGV4dD48L3N2Zz4='}" 
                          alt="${product.name}" 
                          class="product-img">
                     <div class="product-info">
@@ -1429,20 +1560,20 @@
                         <div class="product-category">${getCategoryName(product.category)}</div>
                         <div class="product-price">${formatPrice(product.price)}</div>
                         <div class="product-actions">
-                            <button class="btn btn-primary" onclick="addToCart('${product.id}')">
+                            <button class="btn btn-primary" onclick="addToCart(${product.id})">
                                 <i class="fas fa-cart-plus"></i> ဝယ်မယ်
                             </button>
-                            <button class="btn btn-success" onclick="quickCheckout('${product.id}')">
+                            <button class="btn btn-success" onclick="quickCheckout(${product.id})">
                                 <i class="fas fa-bolt"></i> အမြန်ချေမည်
                             </button>
                         </div>
                         <div style="display: flex; gap: 5px; margin-top: 10px;">
                             <button class="btn btn-warning" style="flex: 1; padding: 6px;" 
-                                    onclick="showPaymentOptions('${product.id}')">
+                                    onclick="showPaymentOptions(${product.id})">
                                 <i class="fas fa-mobile-alt"></i> KPay
                             </button>
                             <button class="btn btn-warning" style="flex: 1; padding: 6px;" 
-                                    onclick="showPaymentOptions('${product.id}')">
+                                    onclick="showPaymentOptions(${product.id})">
                                 <i class="fas fa-wave-square"></i> Wave
                             </button>
                         </div>
@@ -1471,7 +1602,7 @@
                         <div class="admin-product-name">${product.name}</div>
                         <div class="admin-product-price">${formatPrice(product.price)}</div>
                     </div>
-                    <button class="btn btn-danger" onclick="deleteProduct('${product.id}')" style="padding: 5px 10px;">
+                    <button class="btn btn-danger" onclick="deleteProductFromUI(${product.id})" style="padding: 5px 10px;">
                         <i class="fas fa-trash"></i>
                     </button>
                 `;
@@ -1479,10 +1610,14 @@
             });
         }
 
-        function deleteProduct(productId) {
+        async function deleteProductFromUI(productId) {
             if (confirm('ဒီပစ္စည်းကို ဖျက်မှာလား?')) {
-                deleteProductFromFirebase(productId);
-                alert('ပစ္စည်း ဖျက်ပြီးပါပြီ');
+                const success = await deleteProduct(productId);
+                if (success) {
+                    alert('ပစ္စည်း ဖျက်ပြီးပါပြီ');
+                } else {
+                    alert('ပစ္စည်းဖျက်ရာမှာ ပြဿနာရှိပါတယ်။');
+                }
             }
         }
 
@@ -1588,12 +1723,12 @@
             const product = products.find(p => p.id === productId);
             if (!product) return;
             
-            const existing = cart.find(item => item.productId === productId);
+            const existing = cart.find(item => item.id === productId);
             if (existing) {
                 existing.quantity++;
             } else {
                 cart.push({
-                    productId: product.id,
+                    id: product.id,
                     name: product.name,
                     price: product.price,
                     quantity: 1,
@@ -1657,22 +1792,29 @@
         });
         
         // Clear chat buttons
-        document.getElementById('quickClearChatBtn').addEventListener('click', () => {
+        document.getElementById('quickClearChatBtn').addEventListener('click', async () => {
             if (confirm('မက်ဆေ့ချ်အားလုံးကို ဖျက်မှာလား?')) {
-                clearMessagesFromFirebase();
+                const success = await clearMessages();
+                if (!success) {
+                    alert('မက်ဆေ့ချ်ဖျက်ရာမှာ ပြဿနာရှိပါတယ်။');
+                }
             }
         });
 
         // Add sample products
-        document.getElementById('addSampleProducts').addEventListener('click', () => {
+        document.getElementById('addSampleProducts').addEventListener('click', async () => {
             const newProduct = { 
                 name: 'အသစ်ထည့်ထားသောပစ္စည်း', 
                 price: 15000, 
                 category: 'home', 
                 image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y4ZmFmYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5Y2EzYjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7gnYngnYrgnYzgnY3gnYrgnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYzgnYngnYrgnY3gnYw='
             };
-            addProductToFirebase(newProduct);
-            alert('နမူနာပစ္စည်း ထည့်ပြီးပါပြီ');
+            const result = await addProduct(newProduct);
+            if (result) {
+                alert('နမူနာပစ္စည်း ထည့်ပြီးပါပြီ');
+            } else {
+                alert('ပစ္စည်းထည့်ရာမှာ ပြဿနာရှိပါတယ်။');
+            }
         });
 
         // Admin Login
@@ -1701,13 +1843,13 @@
         });
 
         // Admin form submission
-        document.getElementById('adminForm').addEventListener('submit', (e) => {
+        document.getElementById('adminForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const name = document.getElementById('pName').value;
             const price = parseInt(document.getElementById('pPrice').value) || 0;
             const category = document.getElementById('pCategory').value.toLowerCase() || 'other';
-            const image = document.getElementById('pPreview').src || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y4ZmFmYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5Y2EzYjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ပုံမရှိ</dGV4dD48L3N2Zz4=';
+            const image = document.getElementById('pPreview').src || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZillY2Y9IiNmOGZhZmMiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSIjOWNhM2I4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+ပုံမရှိ</dGV4dD48L3N2Zz4=';
             
             const newProduct = {
                 name: name,
@@ -1716,14 +1858,18 @@
                 image: image
             };
             
-            addProductToFirebase(newProduct);
+            const result = await addProduct(newProduct);
             
-            // Reset form
-            e.target.reset();
-            document.getElementById('pPreview').style.display = 'none';
-            document.getElementById('pImage').value = '';
-            
-            alert('ပစ္စည်းအသစ် ထည့်သွင်းပြီးပါပြီ');
+            if (result) {
+                // Reset form
+                e.target.reset();
+                document.getElementById('pPreview').style.display = 'none';
+                document.getElementById('pImage').value = '';
+                
+                alert('ပစ္စည်းအသစ် ထည့်သွင်းပြီးပါပြီ');
+            } else {
+                alert('ပစ္စည်းထည့်ရာမှာ ပြဿနာရှိပါတယ်။');
+            }
         });
 
         document.getElementById('clearForm').addEventListener('click', () => {
@@ -1733,7 +1879,7 @@
         });
 
         // Checkout buttons
-        function checkout() {
+        async function checkout() {
             if (cart.length === 0) {
                 alert('ကတ်ထဲမှာ ပစ္စည်းမရှိပါ');
                 return;
@@ -1751,15 +1897,20 @@
                 customer: name,
                 phone: phone,
                 total: total,
-                date: getCurrentDate(),
-                items: [...cart]
+                status: 'pending',
+                items: cart
             };
             
-            addOrderToFirebase(newOrder);
-            cart = [];
-            saveCart();
+            const result = await addOrder(newOrder);
             
-            alert(`အော်ဒါတင်ပြီးပါပြီ!\n\nကျေးဇူးပြု၍ ငွေပေးချေပါ။\n\nKPay: 09 940790449\nWavePay: 09 954204473`);
+            if (result) {
+                cart = [];
+                saveCart();
+                
+                alert(`အော်ဒါတင်ပြီးပါပြီ!\n\nအော်ဒါနံပါတ်: ORD-${result.id}\nကျေးဇူးပြု၍ ငွေပေးချေပါ။\n\nKPay: 09 940790449\nWavePay: 09 954204473`);
+            } else {
+                alert('အော်ဒါတင်ရာမှာ ပြဿနာရှိပါတယ်။');
+            }
         }
 
         document.getElementById('checkoutBtn').addEventListener('click', checkout);
@@ -1802,12 +1953,16 @@
         });
 
         // Initialize
+        setupRealtime();
+        loadProducts();
+        loadOrders();
+        loadMessages();
         renderCartSummary();
         renderCartPage();
         updateCartNavCount();
         
-        // Add initial data if Firebase is empty
-        setTimeout(() => {
+        // Add initial data if database is empty
+        setTimeout(async () => {
             if (products.length === 0) {
                 const initialProducts = [
                     { 
@@ -1824,21 +1979,19 @@
                     }
                 ];
                 
-                initialProducts.forEach(product => {
-                    addProductToFirebase(product);
-                });
+                for (const product of initialProducts) {
+                    await addProduct(product);
+                }
             }
             
             if (messages.length === 0) {
                 const welcomeMessage = {
                     sender: 'admin',
-                    text: 'ကြိုဆိုပါတယ်! မေးစရာရှိရင် မေးနိုင်ပါတယ်။',
-                    time: getCurrentTime(),
-                    date: getCurrentDate()
+                    text: 'ကြိုဆိုပါတယ်! မေးစရာရှိရင် မေးနိုင်ပါတယ်။'
                 };
-                addMessageToFirebase(welcomeMessage);
+                await addMessage(welcomeMessage);
             }
-        }, 1000);
+        }, 2000);
     </script>
 </body>
 </html>
