@@ -593,32 +593,12 @@
             margin: 0 auto;
         }
 
-        .messages-wrapper {
-            background: var(--white);
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            max-height: 500px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .messages-header {
-            padding: 16px;
-            border-bottom: 1px solid var(--border);
-            font-weight: 600;
-            color: var(--dark);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
         #messagesContainer {
-            flex: 1;
+            max-height: 500px;
             overflow-y: auto;
-            padding: 16px;
+            padding-right: 8px;
             display: flex;
             flex-direction: column-reverse; /* ဒါက အဓိကပါ - မက်ဆေ့ဂျ်အသစ်တွေ အောက်မှာ ပေါ်အောင် */
-            min-height: 0;
         }
 
         #messagesContainer::-webkit-scrollbar {
@@ -693,14 +673,6 @@
             line-height: 1.4;
             white-space: pre-wrap;
             font-size: 14px;
-        }
-
-        .message-input-area {
-            padding: 16px;
-            border-top: 1px solid var(--border);
-            background: var(--white);
-            border-bottom-left-radius: 12px;
-            border-bottom-right-radius: 12px;
         }
 
         /* Admin Panel */
@@ -1247,14 +1219,7 @@
             .message-item {
                 padding: 10px;
                 font-size: 13px;
-            }
-            
-            .message-item.admin {
-                max-width: 80%;
-            }
-            
-            .message-item.customer {
-                max-width: 80%;
+                max-width: 90%;
             }
             
             /* Admin forms mobile */
@@ -1284,10 +1249,6 @@
             
             .report-cards {
                 grid-template-columns: 1fr !important;
-            }
-            
-            .message-item {
-                max-width: 90% !important;
             }
         }
 
@@ -1449,28 +1410,20 @@
             </div>
 
             <div class="messages-container">
-                <div class="messages-wrapper">
-                    <div class="messages-header">
-                        <i class="fas fa-comments"></i> Chat with Admin
+                <div id="messagesContainer" class="admin-form">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading messages...</p>
                     </div>
-                    
-                    <div id="messagesContainer">
-                        <div class="loading">
-                            <div class="spinner"></div>
-                            <p>Loading messages...</p>
-                        </div>
-                    </div>
-                    
-                    <div class="message-input-area">
-                        <div class="search-box">
-                            <input type="text" id="messageInput" class="search-input" 
-                                   placeholder="Type your message..." 
-                                   onkeypress="if(event.key === 'Enter') sendMessage()">
-                            <button class="search-btn" onclick="sendMessage()">
-                                <i class="fas fa-paper-plane"></i> Send
-                            </button>
-                        </div>
-                    </div>
+                </div>
+
+                <div class="message-input" style="margin-top: 20px;">
+                    <input type="text" id="messageInput" class="form-input" 
+                           placeholder="Type your message..." 
+                           onkeypress="if(event.key === 'Enter') sendMessage()">
+                    <button class="btn btn-primary" onclick="sendMessage()" style="margin-top: 10px; width: 100%;">
+                        <i class="fas fa-paper-plane"></i> Send Message
+                    </button>
                 </div>
             </div>
         </div>
@@ -1528,7 +1481,7 @@
                         <label class="form-label">Product Image (Optional)</label>
                         <div class="file-upload-area" id="fileUploadContainer" onclick="document.getElementById('imageInput').click()">
                             <i class="fas fa-cloud-upload-alt"></i>
-                            <p>Click to upload image</p>
+                            <p>Drag & drop or click to upload</p>
                             <small>PNG, JPG up to 5MB</small>
                         </div>
                         <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
@@ -1647,8 +1600,9 @@
     <!-- JavaScript -->
     <script>
         // ===== SUPABASE CONFIGURATION =====
-       const SUPABASE_URL = 'https://uwcfumkwljuuizvtfqmn.supabase.co';
+        const SUPABASE_URL = 'https://uwcfumkwljuuizvtfqmn.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_u8z35hVpUr-iAC2zJDu49g_lZATgEaR';
+        
         let supabase;
         let products = [];
         let allProducts = [];
@@ -1698,27 +1652,32 @@
             }
         }
 
-        // ===== IMAGE UPLOAD =====
+        // ===== IMAGE UPLOAD FIX =====
         async function uploadImageToSupabase(file) {
             try {
                 const fileExt = file.name.split('.').pop();
                 const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
                 const filePath = `product-images/${fileName}`;
                 
-                // ပထမဆုံး storage bucket ရှိမရှိစစ်ပါ
-                const { data: buckets, error: listError } = await supabase.storage.listBuckets();
-                
-                if (listError) {
-                    console.error('Error listing buckets:', listError);
-                    // Bucket မရှိရင် ဖန်တီးဖို့ ကြိုးစားမယ်
-                    try {
-                        const { error: createError } = await supabase.storage.createBucket('product-images', {
-                            public: true
-                        });
-                        if (createError) throw createError;
-                    } catch (createError) {
-                        console.error('Error creating bucket:', createError);
+                // ပထမဆုံး storage bucket ကိုစစ်ကြည့်ပါ
+                try {
+                    const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+                    
+                    if (listError) {
+                        console.log('Creating product-images bucket...');
+                        // Bucket မရှိရင် ဖန်တီးဖို့ ကြိုးစားကြည့်ပါ
+                        try {
+                            await supabase.storage.createBucket('product-images', {
+                                public: true,
+                                fileSizeLimit: 5242880 // 5MB
+                            });
+                            console.log('Bucket created successfully');
+                        } catch (createError) {
+                            console.log('Bucket may already exist, continuing...');
+                        }
                     }
+                } catch (bucketError) {
+                    console.log('Bucket check error, trying to upload anyway:', bucketError);
                 }
                 
                 // Image upload လုပ်ပါ
@@ -1730,42 +1689,32 @@
                     });
                 
                 if (error) {
-                    // Upload failed, try to create bucket first
-                    console.error('Upload error, trying to create bucket:', error);
-                    try {
-                        const { error: createError } = await supabase.storage.createBucket('product-images', {
-                            public: true
-                        });
-                        if (createError) throw createError;
-                        
-                        // Retry upload
-                        const { data: retryData, error: retryError } = await supabase.storage
-                            .from('product-images')
-                            .upload(filePath, file, {
-                                cacheControl: '3600',
-                                upsert: false
-                            });
-                        
-                        if (retryError) throw retryError;
-                        
-                        const { data: { publicUrl } } = supabase.storage
-                            .from('product-images')
-                            .getPublicUrl(filePath);
-                        
-                        return publicUrl;
-                    } catch (bucketError) {
-                        throw bucketError;
+                    console.error('Upload error details:', error);
+                    
+                    // Specific error handling
+                    if (error.message.includes('Bucket not found')) {
+                        showNotification('Please create "product-images" bucket in Supabase Storage first');
+                        return null;
                     }
+                    
+                    if (error.message.includes('not allowed to upload')) {
+                        showNotification('Storage permissions issue. Please check Supabase Storage settings.');
+                        return null;
+                    }
+                    
+                    throw error;
                 }
                 
+                // Get public URL
                 const { data: { publicUrl } } = supabase.storage
                     .from('product-images')
                     .getPublicUrl(filePath);
                 
+                console.log('Image uploaded successfully:', publicUrl);
                 return publicUrl;
             } catch (error) {
                 console.error('Image upload error:', error);
-                showNotification('Failed to upload image: ' + error.message);
+                showNotification('Image upload failed. Using default image instead.');
                 return null;
             }
         }
@@ -1837,9 +1786,7 @@
                 if (selectedImageFile) {
                     showNotification('Uploading image...');
                     imageUrl = await uploadImageToSupabase(selectedImageFile);
-                    if (!imageUrl) {
-                        showNotification('Using default image instead');
-                    }
+                    // ပုံတင်မအောင်မြင်ရင်လည်း product ကို save လုပ်ပါ
                 }
                 
                 const { data, error } = await supabase
@@ -1910,6 +1857,151 @@
                 showNotification('Failed to delete product');
                 return false;
             }
+        }
+
+        // ===== MESSAGES FIX =====
+        async function loadMessages() {
+            try {
+                const { data, error } = await supabase
+                    .from('messages')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                renderMessages(data || []);
+                
+                // Auto scroll to top (အပေါ်ဆုံးက အသစ်ဆုံး message ကိုပြဖို့)
+                setTimeout(() => {
+                    const messagesContainer = document.getElementById('messagesContainer');
+                    if (messagesContainer) {
+                        messagesContainer.scrollTop = 0;
+                    }
+                }, 100);
+                
+                return true;
+            } catch (error) {
+                console.error('Error loading messages:', error);
+                
+                const container = document.getElementById('messagesContainer');
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px; color: var(--gray);">
+                        <i class="fas fa-comments" style="font-size: 32px; margin-bottom: 12px;"></i>
+                        <p>No messages yet</p>
+                        <p style="font-size: 13px; margin-top: 8px;">Send your first message to admin</p>
+                    </div>
+                `;
+                
+                return false;
+            }
+        }
+
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (!message) {
+                showNotification('Please enter a message');
+                return;
+            }
+            
+            const sendBtn = document.querySelector('.btn-primary[onclick="sendMessage()"]');
+            const originalText = sendBtn.innerHTML;
+            sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            sendBtn.disabled = true;
+            
+            try {
+                // is_admin column မသုံးပါနဲ့၊ ရှိရင်ပဲ သုံးပါ
+                const insertData = {
+                    sender_name: 'Customer',
+                    message: message,
+                    created_at: new Date().toISOString()
+                };
+                
+                const { data, error } = await supabase
+                    .from('messages')
+                    .insert([insertData])
+                    .select()
+                    .single();
+                
+                if (error) {
+                    // is_admin column error ဖြစ်ရင် ထပ်ကြိုးစားကြည့်ပါ
+                    if (error.message.includes('is_admin')) {
+                        console.log('is_admin column not found, trying without it...');
+                        const { data: retryData, error: retryError } = await supabase
+                            .from('messages')
+                            .insert([{
+                                sender_name: 'Customer',
+                                message: message,
+                                created_at: new Date().toISOString()
+                            }])
+                            .select()
+                            .single();
+                        
+                        if (retryError) throw retryError;
+                    } else {
+                        throw error;
+                    }
+                }
+                
+                messageInput.value = '';
+                await loadMessages();
+                showNotification('Message sent successfully! ✅');
+                
+            } catch (error) {
+                console.error('Error sending message:', error);
+                showNotification('Failed to send message: ' + (error.message || 'Unknown error'));
+            } finally {
+                sendBtn.innerHTML = originalText;
+                sendBtn.disabled = false;
+            }
+        }
+
+        function renderMessages(messagesList) {
+            const container = document.getElementById('messagesContainer');
+            
+            if (!messagesList || messagesList.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px; color: var(--gray);">
+                        <i class="fas fa-comments" style="font-size: 32px; margin-bottom: 12px;"></i>
+                        <p>No messages yet</p>
+                        <p style="font-size: 13px; margin-top: 8px;">Send your first message to admin</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            // Messages ကို reverse order လုပ်ပြီး အောက်ဆုံးကနေ အပေါ်ဆုံးထိ စီပါ
+            [...messagesList].reverse().forEach(msg => {
+                const messageDate = new Date(msg.created_at).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                // is_admin column ကို စစ်ပါ၊ မရှိရင် sender_name ကိုကြည့်ပြီး ဆုံးဖြတ်ပါ
+                const isAdmin = msg.is_admin !== undefined ? msg.is_admin : 
+                              (msg.sender_name && msg.sender_name.toLowerCase() === 'admin');
+                
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message-item ${isAdmin ? 'admin' : 'customer'}`;
+                
+                messageDiv.innerHTML = `
+                    <div class="message-header">
+                        <div class="message-sender">
+                            <i class="fas ${isAdmin ? 'fa-user-shield' : 'fa-user'}"></i>
+                            ${msg.sender_name}
+                        </div>
+                        <div class="message-time">${messageDate}</div>
+                    </div>
+                    <div class="message-content">${msg.message}</div>
+                `;
+                
+                container.appendChild(messageDiv);
+            });
         }
 
         // ===== ORDER MANAGEMENT =====
@@ -1991,87 +2083,6 @@
             } catch (error) {
                 console.error('Error updating order:', error);
                 showNotification('Failed to update order status');
-            }
-        }
-
-        // ===== MESSAGES FUNCTIONS WITH AUTO SCROLL =====
-        async function loadMessages() {
-            try {
-                const { data, error } = await supabase
-                    .from('messages')
-                    .select('*')
-                    .order('created_at', { ascending: true }); // အဟောင်းကနေ အသစ်စီ
-                
-                if (error) throw error;
-                
-                renderMessages(data || []);
-                
-                // Auto scroll to bottom (အသစ်ဆုံးမက်ဆေ့ဂျ်ကို အောက်ဆုံးမှာ ပြဖို့)
-                setTimeout(scrollToMessagesBottom, 100);
-                
-                return true;
-            } catch (error) {
-                console.error('Error loading messages:', error);
-                
-                const container = document.getElementById('messagesContainer');
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 40px 20px; color: var(--gray);">
-                        <i class="fas fa-comments" style="font-size: 32px; margin-bottom: 12px;"></i>
-                        <p>No messages yet</p>
-                        <p style="font-size: 13px; margin-top: 8px;">Send your first message to admin</p>
-                    </div>
-                `;
-                
-                return false;
-            }
-        }
-
-        function scrollToMessagesBottom() {
-            const messagesContainer = document.getElementById('messagesContainer');
-            if (messagesContainer) {
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            }
-        }
-
-        async function sendMessage() {
-            const messageInput = document.getElementById('messageInput');
-            const message = messageInput.value.trim();
-            
-            if (!message) {
-                showNotification('Please enter a message');
-                return;
-            }
-            
-            const sendBtn = document.querySelector('.search-btn[onclick="sendMessage()"]');
-            const originalText = sendBtn.innerHTML;
-            sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            sendBtn.disabled = true;
-            
-            try {
-                const { data, error } = await supabase
-                    .from('messages')
-                    .insert([{
-                        sender_name: 'Customer',
-                        message: message,
-                        created_at: new Date().toISOString(),
-                        is_admin: false
-                    }])
-                    .select()
-                    .single();
-                
-                if (error) throw error;
-                
-                messageInput.value = '';
-                await loadMessages();
-                showNotification('Message sent successfully! ✅');
-                
-            } catch (error) {
-                console.error('Error sending message:', error);
-                showNotification('Failed to send message: ' + (error.message || 'Unknown error'));
-            } finally {
-                sendBtn.innerHTML = originalText;
-                sendBtn.disabled = false;
-                messageInput.focus();
             }
         }
 
@@ -2438,9 +2449,8 @@
                 case 'messages':
                     loadMessages();
                     setTimeout(() => {
-                        const messageInput = document.getElementById('messageInput');
-                        if (messageInput) messageInput.focus();
-                    }, 300);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }, 100);
                     break;
                 case 'admin':
                     if (!isAdminLoggedIn) {
@@ -2632,7 +2642,7 @@
                         <p>Add some products to get started</p>
                         <button class="btn btn-primary" onclick="showPage('home')">
                             <i class="fas fa-shopping-bag"></i> Browse Products
-                    </button>
+                        </button>
                     </div>
                 `;
                 summary.style.display = 'none';
@@ -2810,50 +2820,6 @@
         }
 
         // ===== RENDER FUNCTIONS =====
-        function renderMessages(messagesList) {
-            const container = document.getElementById('messagesContainer');
-            
-            if (!messagesList || messagesList.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 40px 20px; color: var(--gray);">
-                        <i class="fas fa-comments" style="font-size: 32px; margin-bottom: 12px;"></i>
-                        <p>No messages yet</p>
-                        <p style="font-size: 13px; margin-top: 8px;">Send your first message to admin</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            container.innerHTML = '';
-            
-            messagesList.forEach(msg => {
-                const messageDate = new Date(msg.created_at).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-                
-                const isAdmin = msg.sender_name.toLowerCase() === 'admin' || msg.is_admin === true;
-                
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message-item ${isAdmin ? 'admin' : 'customer'}`;
-                
-                messageDiv.innerHTML = `
-                    <div class="message-header">
-                        <div class="message-sender">
-                            <i class="fas ${isAdmin ? 'fa-user-shield' : 'fa-user'}"></i>
-                            ${msg.sender_name}
-                        </div>
-                        <div class="message-time">${messageDate}</div>
-                    </div>
-                    <div class="message-content">${msg.message}</div>
-                `;
-                
-                container.appendChild(messageDiv);
-            });
-        }
-
         function renderAdminOrders(ordersList) {
             const container = document.getElementById('adminOrdersContainer');
             
@@ -2919,7 +2885,7 @@
                             </div>
                         </div>
                         
-                        <div style="display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;">
+                        <div style="display: flex; gap: 8px; margin-top: 12px;">
                             <button class="btn-sm" onclick="changeOrderStatus(${order.id}, 'confirmed')" 
                                     style="background: #10b981; color: white; ${order.status === 'confirmed' ? 'opacity: 0.5; cursor: default;' : ''}">
                                 <i class="fas fa-check"></i> Confirm
@@ -3339,7 +3305,7 @@
         // Initialize
         window.onload = init;
         
-        // Add drag and drop support for image upload
+        // Add drag and drop support
         const fileUploadContainer = document.getElementById('fileUploadContainer');
         if (fileUploadContainer) {
             fileUploadContainer.addEventListener('dragover', (e) => {
@@ -3379,4 +3345,3 @@
     </script>
 </body>
 </html>
-
