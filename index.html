@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>Myanmar Online Shop - Complete System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -28,6 +28,12 @@
             padding: 0;
             box-sizing: border-box;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+        }
+
+        html {
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
         }
 
         body {
@@ -94,6 +100,8 @@
             align-items: center;
             gap: 6px;
             transition: all 0.2s;
+            min-height: 44px;
+            min-width: 44px;
         }
 
         .nav-link:hover {
@@ -176,6 +184,8 @@
             cursor: pointer;
             white-space: nowrap;
             transition: all 0.2s;
+            min-height: 44px;
+            min-width: 44px;
         }
 
         .category-btn:hover {
@@ -202,10 +212,10 @@
 
         .search-input {
             flex: 1;
-            padding: 10px 16px;
+            padding: 12px 16px;
             border: 1px solid var(--border);
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 16px;
             transition: all 0.2s;
         }
 
@@ -216,7 +226,7 @@
         }
 
         .search-btn {
-            padding: 10px 20px;
+            padding: 12px 20px;
             background: var(--primary);
             color: white;
             border: none;
@@ -227,6 +237,7 @@
             gap: 6px;
             font-weight: 600;
             font-size: 14px;
+            min-height: 44px;
         }
 
         .search-btn:hover {
@@ -251,12 +262,29 @@
             display: flex;
             flex-direction: column;
             height: 100%;
+            animation: fadeInUp 0.3s ease forwards;
+            opacity: 0;
         }
 
         .product-card:hover {
             transform: translateY(-4px);
             box-shadow: var(--shadow-lg);
             border-color: var(--primary);
+        }
+
+        .product-card:active {
+            transform: scale(0.98);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .product-image-container {
@@ -296,6 +324,18 @@
             font-size: 14px;
         }
 
+        .mobile-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--primary);
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
         .product-content {
             padding: 16px;
             flex: 1;
@@ -320,6 +360,13 @@
             display: inline-block;
             margin-bottom: 12px;
             align-self: flex-start;
+        }
+
+        .product-description {
+            font-size: 13px;
+            color: var(--gray);
+            margin-bottom: 12px;
+            line-height: 1.4;
         }
 
         .product-price {
@@ -348,6 +395,8 @@
             gap: 6px;
             transition: all 0.2s;
             flex: 1;
+            min-height: 44px;
+            min-width: 44px;
         }
 
         .btn-primary {
@@ -471,6 +520,8 @@
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
+            min-height: 44px;
+            min-width: 44px;
         }
 
         .quantity-btn:hover {
@@ -499,6 +550,8 @@
             padding: 0;
             border-radius: 8px;
             flex: none;
+            min-height: 44px;
+            min-width: 44px;
         }
 
         .btn-icon i {
@@ -540,12 +593,42 @@
             margin: 0 auto;
         }
 
+        #messagesContainer {
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        #messagesContainer::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #messagesContainer::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        #messagesContainer::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+
+        #messagesContainer::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+
         .message-item {
             background: var(--white);
             border-radius: 12px;
             padding: 16px;
             margin-bottom: 12px;
             border: 1px solid var(--border);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .message-header {
@@ -571,6 +654,7 @@
         .message-content {
             color: var(--dark);
             line-height: 1.5;
+            white-space: pre-wrap;
         }
 
         /* Admin Panel */
@@ -601,10 +685,10 @@
 
         .form-input {
             width: 100%;
-            padding: 10px 12px;
+            padding: 12px 16px;
             border: 1px solid var(--border);
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 16px;
             transition: all 0.2s;
         }
 
@@ -616,10 +700,10 @@
 
         .form-select {
             width: 100%;
-            padding: 10px 12px;
+            padding: 12px 16px;
             border: 1px solid var(--border);
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 16px;
             background: var(--white);
             cursor: pointer;
         }
@@ -759,6 +843,7 @@
         .btn-sm {
             padding: 6px 12px;
             font-size: 13px;
+            min-height: 36px;
         }
 
         .btn-danger {
@@ -960,6 +1045,14 @@
 
         /* Responsive Design */
         @media (max-width: 768px) {
+            .header {
+                height: 56px;
+            }
+            
+            .nav-container {
+                padding: 0 12px;
+            }
+            
             .nav-links {
                 gap: 2px;
             }
@@ -978,15 +1071,71 @@
                 font-size: 16px;
             }
             
+            .logo span {
+                display: none;
+            }
+            
+            /* Mobile: Products ကို 2 columns */
             .products-grid {
-                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-                gap: 16px;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 12px !important;
+            }
+            
+            .product-card {
+                height: auto;
+                min-height: 320px;
+                margin-bottom: 0;
+            }
+            
+            .product-image-container {
+                height: 150px !important;
+                flex-shrink: 0;
+            }
+            
+            .product-content {
+                padding: 12px !important;
+            }
+            
+            .product-name {
+                font-size: 14px !important;
+                line-height: 1.3 !important;
+                height: 36px;
+                overflow: hidden;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+            }
+            
+            .product-price {
+                font-size: 16px !important;
+                margin-bottom: 12px !important;
+            }
+            
+            .product-description {
+                display: none !important;
+            }
+            
+            .product-actions {
+                flex-direction: column !important;
+                gap: 8px !important;
+            }
+            
+            .btn {
+                width: 100% !important;
+                padding: 10px 12px !important;
+                font-size: 13px !important;
             }
             
             .cart-item {
                 flex-direction: column;
                 text-align: center;
                 gap: 12px;
+                padding: 12px;
+            }
+            
+            .cart-item-image {
+                width: 70px;
+                height: 70px;
             }
             
             .cart-item-details {
@@ -998,27 +1147,77 @@
                 min-width: auto;
             }
             
-            .product-actions {
-                flex-direction: column;
-            }
-            
-            .btn {
-                width: 100%;
-            }
-            
             .main-container {
                 margin: 70px auto 24px;
                 padding: 0 12px;
             }
             
             .report-cards {
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 12px !important;
+            }
+            
+            .admin-product-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 12px;
+                padding: 12px !important;
+            }
+            
+            .admin-product-meta {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            /* Categories mobile */
+            .categories {
+                gap: 6px;
+            }
+            
+            .category-btn {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+            
+            /* Search bar mobile */
+            .search-box {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .search-input {
+                width: 100%;
+            }
+            
+            .search-btn {
+                width: 100%;
+            }
+            
+            /* Messages on mobile */
+            #messagesContainer {
+                max-height: 60vh;
+            }
+            
+            .message-item {
+                padding: 12px;
+                font-size: 14px;
+            }
+            
+            /* Admin forms mobile */
+            .admin-form {
+                padding: 16px !important;
+            }
+            
+            .form-group {
+                margin-bottom: 16px !important;
             }
         }
 
         @media (max-width: 480px) {
+            /* Very small screens: 1 column */
             .products-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr !important;
+                gap: 16px !important;
             }
             
             .page-title {
@@ -1029,19 +1228,29 @@
                 max-height: 80vh;
             }
             
-            .admin-product-item {
-                flex-direction: column;
-                text-align: center;
-                gap: 12px;
-            }
-            
-            .admin-product-meta {
-                justify-content: center;
-            }
-            
             .report-cards {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr !important;
             }
+        }
+
+        @media (max-width: 360px) {
+            .nav-links {
+                gap: 4px;
+            }
+            
+            .nav-link {
+                padding: 8px 10px;
+            }
+        }
+
+        /* Hide scrollbar for categories */
+        .categories-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .categories-container {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
     </style>
 </head>
@@ -1674,7 +1883,7 @@
             }
         }
 
-        // ===== MESSAGES FUNCTIONS =====
+        // ===== MESSAGES FUNCTIONS WITH AUTO SCROLL =====
         async function loadMessages() {
             try {
                 const { data, error } = await supabase
@@ -1685,11 +1894,41 @@
                 if (error) throw error;
                 
                 renderMessages(data || []);
+                
+                // Auto scroll to top
+                setTimeout(scrollToMessagesTop, 50);
+                
                 return true;
             } catch (error) {
                 console.error('Error loading messages:', error);
-                showNotification('Failed to load messages');
+                
+                const container = document.getElementById('messagesContainer');
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px; color: var(--gray);">
+                        <i class="fas fa-comments" style="font-size: 32px; margin-bottom: 12px;"></i>
+                        <p>No messages yet</p>
+                        <p style="font-size: 13px; margin-top: 8px;">Send your first message to admin</p>
+                    </div>
+                `;
+                
                 return false;
+            }
+        }
+
+        function scrollToMessagesTop() {
+            const messagesContainer = document.getElementById('messagesContainer');
+            if (messagesContainer) {
+                messagesContainer.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+                
+                if (messagesContainer.getBoundingClientRect().top < 0) {
+                    window.scrollTo({
+                        top: messagesContainer.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
             }
         }
 
@@ -1701,6 +1940,11 @@
                 showNotification('Please enter a message');
                 return;
             }
+            
+            const sendBtn = document.querySelector('.btn-primary[onclick="sendMessage()"]');
+            const originalText = sendBtn.innerHTML;
+            sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            sendBtn.disabled = true;
             
             try {
                 const { data, error } = await supabase
@@ -1716,11 +1960,15 @@
                 if (error) throw error;
                 
                 messageInput.value = '';
-                loadMessages();
-                showNotification('Message sent successfully!');
+                await loadMessages();
+                showNotification('Message sent successfully! ✅');
+                
             } catch (error) {
                 console.error('Error sending message:', error);
-                showNotification('Failed to send message');
+                showNotification('Failed to send message: ' + (error.message || 'Unknown error'));
+            } finally {
+                sendBtn.innerHTML = originalText;
+                sendBtn.disabled = false;
             }
         }
 
@@ -2086,6 +2334,9 @@
                     break;
                 case 'messages':
                     loadMessages();
+                    setTimeout(() => {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }, 100);
                     break;
                 case 'admin':
                     if (!isAdminLoggedIn) {
@@ -2094,6 +2345,11 @@
                     } else {
                         loadAdminData();
                     }
+                    break;
+                case 'trackOrder':
+                    setTimeout(() => {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }, 100);
                     break;
             }
         }
@@ -2145,30 +2401,39 @@
             
             container.innerHTML = '';
             
-            productsList.forEach(product => {
+            const isMobile = window.innerWidth <= 768;
+            
+            productsList.forEach((product, index) => {
                 const card = document.createElement('div');
                 card.className = 'product-card';
+                card.style.animationDelay = `${index * 0.05}s`;
+                card.style.opacity = '0';
+                
                 card.innerHTML = `
                     <div class="product-image-container">
                         ${product.image_url ? 
-                            `<img src="${product.image_url}" alt="${product.name}" class="product-image">` : 
+                            `<img src="${product.image_url}" alt="${product.name}" class="product-image" loading="lazy">` : 
                             `<div class="no-image">
                                 <i class="fas fa-image"></i>
                                 <span>No Image</span>
                             </div>`
                         }
+                        ${isMobile ? `<div class="mobile-badge">Tap</div>` : ''}
                     </div>
                     <div class="product-content">
-                        <h3 class="product-name">${product.name}</h3>
+                        <h3 class="product-name" title="${product.name}">${product.name}</h3>
                         <span class="product-category">${getCategoryName(product.category)}</span>
-                        ${product.description ? `<p style="font-size: 14px; color: var(--gray); margin-bottom: 12px; line-height: 1.4;">${product.description}</p>` : ''}
+                        ${product.description && !isMobile ? 
+                            `<p class="product-description">${product.description.substring(0, 60)}${product.description.length > 60 ? '...' : ''}</p>` : 
+                            ''
+                        }
                         <div class="product-price">${formatPrice(product.price)}</div>
                         <div class="product-actions">
-                            <button class="btn btn-primary" onclick="addToCart(${product.id})">
-                                <i class="fas fa-cart-plus"></i> Add to Cart
+                            <button class="btn btn-primary" onclick="addToCart(${product.id})" aria-label="Add ${product.name} to cart">
+                                <i class="fas fa-cart-plus"></i> ${isMobile ? 'Add' : 'Add to Cart'}
                             </button>
-                            <button class="btn btn-success" onclick="quickCheckout(${product.id})">
-                                <i class="fas fa-bolt"></i> Quick Buy
+                            <button class="btn btn-success" onclick="quickCheckout(${product.id})" aria-label="Quick buy ${product.name}">
+                                <i class="fas fa-bolt"></i> ${isMobile ? 'Buy' : 'Quick Buy'}
                             </button>
                         </div>
                     </div>
@@ -3001,6 +3266,17 @@
                 }
             });
         }
+
+        // Window resize handler for responsive updates
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(function() {
+                if (currentPage === 'home' && !searchActive) {
+                    renderProducts(currentCategory === 'all' ? products : products.filter(p => p.category === currentCategory));
+                }
+            }, 250);
+        });
     </script>
 </body>
 </html>
