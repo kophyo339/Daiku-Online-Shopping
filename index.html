@@ -1731,22 +1731,46 @@
                     if (!imageUrl) return null;
                 }
                 
+                // Column names ကို သေချာစစ်ပါ
+                const productToInsert = {
+                    name: productData.name,
+                    price: productData.price,
+                    category: productData.category,
+                    image_url: imageUrl,
+                    created_at: new Date().toISOString()
+                };
+                
+                // Description ရှိရင် ထည့်ပါ
+                if (productData.description && productData.description.trim() !== '') {
+                    productToInsert.description = productData.description;
+                }
+                
                 const { data, error } = await supabase
                     .from('products')
-                    .insert([{
-                        name: productData.name,
-                        description: productData.description || '',
-                        price: productData.price,
-                        category: productData.category,
-                        image_url: imageUrl,
-                        created_at: new Date().toISOString()
-                    }])
+                    .insert([productToInsert])
                     .select()
                     .single();
                 
                 if (error) {
                     console.error('Supabase error details:', error);
-                    throw new Error(error.message || 'Database error');
+                    // Table structure ကိုစစ်ကြည့်ပါ
+                    if (error.message.includes('description') || error.message.includes('column')) {
+                        // Description column မရှိရင် ဖြုတ်ပြီး ထပ်ကြိုးစားပါ
+                        delete productToInsert.description;
+                        const { data: data2, error: error2 } = await supabase
+                            .from('products')
+                            .insert([productToInsert])
+                            .select()
+                            .single();
+                        
+                        if (error2) throw error2;
+                        
+                        products.unshift(data2);
+                        allProducts.unshift(data2);
+                        showNotification('Product added successfully (without description)');
+                        return data2;
+                    }
+                    throw error;
                 }
                 
                 products.unshift(data);
@@ -1953,12 +1977,12 @@
                 sendBtn.innerHTML = originalText;
                 sendBtn.disabled = false;
                 
-                // Message ပို့ပြီးရင် အောက်ဆုံးကို scroll မဆွဲပါနဲ့
-                // သူ့နေရာမှာပဲ ထားပါ
-                window.scrollTo({
-                    top: document.getElementById('messagesPage').offsetTop,
-                    behavior: 'smooth'
-                });
+                // Message ပို့ပြီးရင် scroll ကို မဆွဲပါနဲ့
+                const messagesContainer = document.getElementById('messagesContainer');
+                if (messagesContainer) {
+                    // အောက်ကို scroll မဆွဲပါနဲ့
+                    // သူ့နေရာမှာပဲ ထားပါ
+                }
             }
         }
 
